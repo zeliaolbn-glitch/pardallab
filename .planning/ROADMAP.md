@@ -34,11 +34,11 @@ graph TD
 
 ### Fase 3: Fluxo de Gestão (Ideias e Projetos)
 **Objetivo:** Implementar a funcionalidade central do CRM.
-- [ ] **Módulo de Ideias**: Grid de ideias, modal de criação com upload de logo.
-- [ ] **Módulo de Projetos**: Lista de projetos com funil de status (IDEIA -> APK).
-- [ ] **Dashboard Widgets**: Cards com contadores reais vindos do banco.
-- [ ] **Feedback do Usuário**: Toasts de sucesso e erro em todas as ações.
-- **Entrega**: Fluxo completo de transformar uma ideia em projeto.
+- [x] **Módulo de Ideias**: Grid de ideias, modal de criação e exclusão.
+- [x] **Módulo de Projetos**: Lista de projetos com transição (IDEIA -> PROJETO).
+- [x] **Dashboard Widgets**: Cards com contadores reais vindos do banco.
+- [x] **Feedback do Usuário**: Toasts de sucesso e erro em todas as ações.
+**Entrega**: Fluxo completo de transformar uma ideia em projeto. ✅
 
 ### Fase 4: Inteligência e Canais (IA + Social)
 **Objetivo:** Adicionar valor com IA e conectividade.
