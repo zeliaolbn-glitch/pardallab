@@ -19,11 +19,11 @@ graph TD
 
 ### Fase 1: Fundação e Infraestrutura (Supabase + Auth)
 **Objetivo:** Estabelecer a base técnica e segurança.
-- [ ] **Setup Inicial**: Configuração do projeto Vite, Tailwind v4 e Shadcn/UI.
-- [ ] **Supabase Setup**: Criação do projeto, tabelas (`profiles`, `ideas`, `projects`) e RLS.
-- [ ] **Autenticação**: Fluxo de Signup/Login (Email e Google OAuth).
-- [ ] **Persistência Core**: Conexão do frontend com o Supabase client.
-- **Entrega**: App funcional com login e proteção de rotas.
+- [x] **Setup Inicial**: Configuração do projeto Vite, Tailwind v4 e Shadcn/UI.
+- [x] **Supabase Setup**: Criação do projeto, tabelas (`profiles`, `ideas`, `projects`) e RLS.
+- [x] **Autenticação**: Fluxo de Signup/Login (Email e Google OAuth).
+- [x] **Persistência Core**: Conexão do frontend com o Supabase client.
+**Entrega**: App funcional com login e proteção de rotas. ✅
 
 ### Fase 2: Interface Core (Landing Page + Dashboard)
 **Objetivo:** Criar a experiência visual e navegação.
