@@ -62,11 +62,30 @@ export function useProjects() {
     }
   })
 
+  const updateProjectMutation = useMutation({
+    mutationFn: async ({ id, ...updates }: Partial<Project> & { id: string }) => {
+      const { data, error } = await supabase
+        .from('projects')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single()
+
+      if (error) throw error
+      return data as Project
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['projects'] })
+    }
+  })
+
   return {
     projects: projectsQuery.data ?? [],
     isLoading: projectsQuery.isLoading,
     createProject: createProjectMutation.mutateAsync,
     isCreating: createProjectMutation.isPending,
+    updateProject: updateProjectMutation.mutateAsync,
+    isUpdating: updateProjectMutation.isPending,
     deleteProject: deleteProjectMutation.mutateAsync
   }
 }

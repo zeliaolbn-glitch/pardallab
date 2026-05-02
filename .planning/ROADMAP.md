@@ -42,10 +42,10 @@ graph TD
 
 ### Fase 4: Inteligência e Canais (IA + Social)
 **Objetivo:** Adicionar valor com IA e conectividade.
-- [ ] **Integração IA**: Modal de chat com Lovable AI enviando contexto do projeto.
-- [ ] **Canais Sociais**: Botões de ação rápida para WhatsApp e Telegram.
-- [ ] **Sugestões de IA**: Renderização formatada das respostas da IA.
-- **Entrega**: Usuário recebe sugestões inteligentes sobre seus projetos.
+- [x] **Integração IA**: Assistente Gemini integrado para gerar planos de ação.
+- [x] **Canais Sociais**: Botões de ação rápida para WhatsApp e Telegram.
+- [x] **Sugestões de IA**: Renderização Markdown e opção de aplicar ao projeto.
+**Entrega**: Usuário recebe sugestões inteligentes e compartilha progresso. ✅
 
 ### Fase 5: Recursos de Apoio (Ferramentas + Tutoriais)
 **Objetivo:** Completar o ecossistema e sincronização externa.

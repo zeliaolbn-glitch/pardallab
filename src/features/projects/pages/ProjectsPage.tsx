@@ -2,8 +2,10 @@ import { useProjects } from '../hooks/useProjects'
 import { Card, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Trash2, FolderGit2 } from 'lucide-react'
+import { Trash2, FolderGit2, MessageSquare, Send } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
+import { AIAssistantModal } from '../components/AIAssistantModal'
+import { getWhatsAppUrl, getTelegramUrl } from '@/lib/social-links'
 
 export default function ProjectsPage() {
   const { projects, isLoading, deleteProject } = useProjects()
@@ -51,13 +53,33 @@ export default function ProjectsPage() {
                   {project.description || 'Sem descrição.'}
                 </CardDescription>
               </CardHeader>
-              <CardFooter className="mt-auto flex justify-end border-t bg-gray-50/50 p-4">
-                <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-600" onClick={() => deleteProject(project.id)}>
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="sm" className="text-blue-600">
-                  Gerenciar
-                </Button>
+              <CardFooter className="mt-auto flex justify-between border-t bg-gray-50/50 p-4">
+                <div className="flex gap-2">
+                  <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-600" onClick={() => deleteProject(project.id)}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="text-green-600"
+                    onClick={() => window.open(getWhatsAppUrl(`Confira meu novo projeto no IdeaFlow: ${project.title}`), '_blank')}
+                  >
+                    <MessageSquare className="h-4 w-4" />
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="text-blue-500"
+                    onClick={() => window.open(getTelegramUrl(`Confira meu novo projeto no IdeaFlow: ${project.title}`), '_blank')}
+                  >
+                    <Send className="h-4 w-4" />
+                  </Button>
+                </div>
+                <AIAssistantModal 
+                  projectId={project.id}
+                  title={project.title} 
+                  description={project.description || ''} 
+                />
               </CardFooter>
             </Card>
           ))}
