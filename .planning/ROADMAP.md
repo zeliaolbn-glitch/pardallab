@@ -27,10 +27,10 @@ graph TD
 
 ### Fase 2: Interface Core (Landing Page + Dashboard)
 **Objetivo:** Criar a experiência visual e navegação.
-- [ ] **Landing Page**: Hero impactante e seção "Como Funciona".
-- [ ] **Layout Base**: Header fixo e Sidebar responsiva (desktop/mobile).
-- [ ] **Esqueleto Visual**: Implementação de Skeletons para carregamento.
-- **Entrega**: Usuário logado navega entre páginas vazias mas estilizadas.
+- [x] **Landing Page**: Hero impactante e seção "Como Funciona".
+- [x] **Layout Base**: Header fixo e Sidebar responsiva (desktop/mobile).
+- [x] **Esqueleto Visual**: Implementação de Skeletons para carregamento.
+**Entrega**: Usuário logado navega entre páginas vazias mas estilizadas. ✅
 
 ### Fase 3: Fluxo de Gestão (Ideias e Projetos)
 **Objetivo:** Implementar a funcionalidade central do CRM.
