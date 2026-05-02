@@ -1,73 +1,67 @@
-# React + TypeScript + Vite
+# IdeaFlow CRM 🚀
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Transforme o caos criativo em projetos de mercado com inteligência artificial.**
 
-Currently, two official plugins are available:
+IdeaFlow é um CRM minimalista e poderoso projetado para capturar insights rápidos e gerenciá-los através de um fluxo de trabalho estruturado, desde a semente da ideia até a execução final, assistido pelo Google Gemini AI.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+![IdeaFlow Preview](https://via.placeholder.com/1200x600/1e3a8a/ffffff?text=IdeaFlow+CRM+v1.0)
 
-## React Compiler
+## ✨ Funcionalidades
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Dashboard Inteligente**: Visão geral em tempo real do seu funil de ideias e projetos.
+- **Captura de Ideias**: Interface rápida para não deixar nenhum insight escapar.
+- **Assistente de IA (Gemini)**: Gere planos de ação, analise desafios e receba sugestões técnicas automaticamente.
+- **Conversão Ideia ➔ Projeto**: Transforme conceitos em planos de execução com um único clique.
+- **Canais Sociais**: Compartilhe o progresso instantaneamente via WhatsApp e Telegram.
+- **Recursos de Apoio**: Catálogo curado de ferramentas e tutoriais em vídeo integrados.
+- **Exportação para Google Sheets**: Seus dados sempre sob seu controle via exportação CSV otimizada.
 
-## Expanding the ESLint configuration
+## 🛠️ Stack Tecnológica
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- **Frontend**: React + Vite + TypeScript
+- **Estilização**: Tailwind CSS v4 + Shadcn/UI (Preset Nova)
+- **Estado/Dados**: TanStack Query (React Query)
+- **Backend**: Supabase (Auth, Database, RLS)
+- **IA**: Google Gemini 1.5 Flash SDK
+- **Notificações**: Sonner (Toasts)
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## 🚀 Como Rodar Localmente
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+1. **Clone o repositório**:
+   ```bash
+   git clone <seu-repositorio>
+   cd 001-CRM-IDEIAS
+   ```
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+2. **Instale as dependências**:
+   ```bash
+   npm install
+   ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+3. **Configure as variáveis de ambiente**:
+   Crie um arquivo `.env.local` na raiz e preencha com suas credenciais:
+   ```env
+   VITE_SUPABASE_URL=https://seu-projeto.supabase.co
+   VITE_SUPABASE_ANON_KEY=sua-chave-anonima-supabase
+   VITE_GEMINI_API_KEY=sua-chave-api-google-gemini
+   ```
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+4. **Inicie o servidor de desenvolvimento**:
+   ```bash
+   npm run dev
+   ```
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## 🌐 Deploy (Vercel / Netlify)
+
+O IdeaFlow está pronto para deploy imediato. Recomendamos a **Vercel**:
+
+1. Conecte seu repositório GitHub na Vercel.
+2. Adicione as variáveis de ambiente listadas acima nas configurações do projeto.
+3. Clique em **Deploy**.
+
+## 📄 Licença
+
+Este projeto é parte do ecossistema de produtividade IdeaFlow. Sinta-se à vontade para expandir e personalizar.
+
+---
+Desenvolvido com ❤️ para criadores e visionários.

@@ -2,12 +2,25 @@ import { useAuth } from '@/features/auth/hooks/useAuth'
 import { useIdeas } from '@/features/ideas/hooks/useIdeas'
 import { useProjects } from '@/features/projects/hooks/useProjects'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import { Lightbulb, Briefcase, CheckCircle2 } from 'lucide-react'
+import { Lightbulb, Briefcase, CheckCircle2, FileSpreadsheet } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { exportToCsv } from '@/lib/export'
+import { toast } from 'sonner'
 
 export default function Dashboard() {
   const { user } = useAuth()
   const { ideas } = useIdeas()
   const { projects } = useProjects()
+
+  const handleExport = () => {
+    try {
+      if (ideas.length > 0) exportToCsv(ideas, 'ideiaflow_ideias')
+      if (projects.length > 0) exportToCsv(projects, 'ideiaflow_projetos')
+      toast.success('Dados exportados com sucesso!')
+    } catch (err) {
+      toast.error('Erro ao exportar dados.')
+    }
+  }
 
   const activeIdeas = ideas.filter(i => i.status === 'active').length
   const activeProjects = projects.filter(p => p.status !== 'completed').length
@@ -20,6 +33,9 @@ export default function Dashboard() {
           <h1 className="text-3xl font-bold tracking-tight">Olá, {user?.email?.split('@')[0]}</h1>
           <p className="text-gray-500">Aqui está um resumo do seu caos criativo organizado.</p>
         </div>
+        <Button variant="outline" className="border-green-200 text-green-700 hover:bg-green-50" onClick={handleExport}>
+          <FileSpreadsheet className="mr-2 h-4 w-4" /> Exportar para Sheets
+        </Button>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
