@@ -13,6 +13,7 @@ export default function RemindersPage() {
   const [newText, setNewText] = useState('')
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editText, setEditText] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -37,6 +38,10 @@ export default function RemindersPage() {
   const pendingCount = reminders.filter(r => !r.completed).length
   const completedCount = reminders.filter(r => r.completed).length
 
+  const filteredReminders = reminders.filter(r =>
+    r.content.toLowerCase().includes(searchQuery.toLowerCase())
+  )
+
   return (
     <div className="max-w-3xl mx-auto space-y-8">
       <div className="flex items-center gap-3">
@@ -52,7 +57,7 @@ export default function RemindersPage() {
       </div>
 
       <Card className="border-none shadow-lg bg-white overflow-hidden">
-        <CardHeader className="bg-slate-50/50 border-b py-4">
+        <CardHeader className="bg-slate-50/50 border-b py-4 space-y-3">
           <form onSubmit={handleAdd} className="flex gap-2">
             <Input 
               placeholder="O que precisa ser feito?" 
@@ -64,6 +69,25 @@ export default function RemindersPage() {
               <Plus className="h-5 w-5" />
             </Button>
           </form>
+          {reminders.length > 0 && (
+            <div className="relative">
+              <Input
+                placeholder="🔍 Filtrar pendências por nome..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="bg-white border-slate-200 h-10 text-sm shadow-sm pl-8"
+              />
+              {searchQuery && (
+                <button 
+                  type="button" 
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs font-medium"
+                >
+                  Limpar
+                </button>
+              )}
+            </div>
+          )}
         </CardHeader>
         <CardContent className="p-0">
           <div className="divide-y divide-slate-100">
@@ -72,8 +96,14 @@ export default function RemindersPage() {
                 <Calendar className="h-12 w-12 mx-auto opacity-20" />
                 <p>Nenhuma pendência. Aproveite o sossego! 🎉</p>
               </div>
+            ) : filteredReminders.length === 0 ? (
+              <div className="p-12 text-center text-slate-400 space-y-2">
+                <Calendar className="h-12 w-12 mx-auto opacity-20" />
+                <p>Nenhuma pendência encontrada com o nome "{searchQuery}".</p>
+              </div>
             ) : (
-              reminders.map((reminder) => (
+              filteredReminders.map((reminder) => (
+
                 <div 
                   key={reminder.id} 
                   className={cn(
