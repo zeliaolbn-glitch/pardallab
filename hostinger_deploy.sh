@@ -1,10 +1,8 @@
 #!/usr/bin/env bash
 
-# Deploy script for Hostinger
+# Deploy script for Hostinger (Passenger Environment)
 # Uses SSH credentials defined in .env.local (HOSTINGER_IP, HOSTINGER_PORT, HOSTINGER_USER, HOSTINGER_PASS)
-# Adjust APP_DIR to the path where the app lives on the server.
 
-# Load environment variables (if running locally)
 if [ -f .env.local ]; then
   export $(grep -v '^#' .env.local | xargs)
 fi
@@ -13,21 +11,29 @@ HOST=${HOSTINGER_IP:-"46.202.145.77"}
 PORT=${HOSTINGER_PORT:-"65002"}
 USER=${HOSTINGER_USER:-"u183568280"}
 PASS=${HOSTINGER_PASS:-"hDqE@_F!EmQMpC2"}
-APP_DIR="/home/${USER}/domains/lawngreen-kudu-132132.hostingersite.com/public_html/"   # Updated remote path
+APP_DIR="/home/${USER}/domains/lawngreen-kudu-132132.hostingersite.com/public_html"
 
-# Commands to execute on remote server
-REMOTE_CMD="set -e; \
+REMOTE_CMD="export PATH=/opt/alt/alt-nodejs22/root/bin:/bin:/usr/bin:/usr/local/bin:\$PATH; \
+set -e; \
 cd \"$APP_DIR\"; \
 git fetch origin; \
 git reset --hard origin/main; \
 npm ci; \
 npm run build; \
-# Restart service (adjust if you use pm2, nodemon, etc.) \
-if command -v pm2 > /dev/null; then pm2 restart all || pm2 start npm --name \"crm-ideias\" -- start; else sudo systemctl restart node-app || echo 'No service restart command defined'; fi"
+rm -rf ../nodejs/public/*; \
+cp -r dist/* ../nodejs/public/; \
+cp backend_hostinger/server.js ../nodejs/app.js; \
+cp backend_hostinger/package.json ../nodejs/package.json; \
+cd ../nodejs; \
+npm install --omit=dev; \
+mkdir -p tmp; \
+touch tmp/restart.txt"
 
-# Use sshpass to provide password non‑interactive (install sshpass on CI or local machine)
-if command -v sshpass > /dev/null; then
+# If local key exists, use it
+if [ -f hostinger_deploy_key ]; then
+  ssh -i hostinger_deploy_key -o StrictHostKeyChecking=no -p $PORT $USER@$HOST "$REMOTE_CMD"
+elif command -v sshpass > /dev/null; then
   sshpass -p "$PASS" ssh -o StrictHostKeyChecking=no -p $PORT $USER@$HOST "$REMOTE_CMD"
 else
-  echo "sshpass not found – please install it or use key‑based authentication"
+  ssh -o StrictHostKeyChecking=no -p $PORT $USER@$HOST "$REMOTE_CMD"
 fi

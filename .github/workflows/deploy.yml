@@ -30,10 +30,18 @@ jobs:
 
       - name: Execute remote deploy script
         run: |
-          ssh -o StrictHostKeyChecking=no -p ${{ env.PORT }} ${{ env.USER }}@${{ env.HOST }} "set -e; \
+          ssh -o StrictHostKeyChecking=no -p ${{ env.PORT }} ${{ env.USER }}@${{ env.HOST }} "export PATH=/opt/alt/alt-nodejs22/root/bin:/bin:/usr/bin:/usr/local/bin:\$PATH; \
+            set -e; \
             cd \"${{ env.APP_DIR }}\"; \
             git fetch origin; \
             git reset --hard origin/main; \
             npm ci; \
             npm run build; \
-            if command -v pm2 > /dev/null; then pm2 restart all || pm2 start npm --name \"crm-ideias\" -- start; else echo 'No pm2; manual restart may be required'; fi"
+            rm -rf ../nodejs/public/*; \
+            cp -r dist/* ../nodejs/public/; \
+            cp backend_hostinger/server.js ../nodejs/app.js; \
+            cp backend_hostinger/package.json ../nodejs/package.json; \
+            cd ../nodejs; \
+            npm install --omit=dev; \
+            mkdir -p tmp; \
+            touch tmp/restart.txt"
