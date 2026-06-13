@@ -26,6 +26,7 @@ rm -rf ../nodejs/public/*; \
 cp -r dist/* ../nodejs/public/; \
 cp backend_hostinger/server.js ../nodejs/app.js; \
 cp backend_hostinger/package.json ../nodejs/package.json; \
+rm -f index.html; \
 cd ../nodejs; \
 npm install --omit=dev; \
 mkdir -p tmp; \
