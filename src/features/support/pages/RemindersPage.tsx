@@ -2,11 +2,17 @@ import { useState } from 'react'
 import { useReminders, type Reminder } from '../hooks/useReminders'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
-import { ListTodo, Plus, Pencil, Trash2, Calendar, ArrowUpDown, Search } from 'lucide-react'
+import { ListTodo, Plus, Pencil, Trash2, Calendar, ArrowUpDown, Search, ChevronDown, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
+
+interface TrashItem {
+  id: string
+  content: string
+  deletedAt: string
+}
 
 export default function RemindersPage() {
   const { reminders, createReminder, toggleReminder, deleteReminder, updateReminder } = useReminders()
@@ -15,6 +21,26 @@ export default function RemindersPage() {
   const [editText, setEditText] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
   const [sortMode, setSortMode] = useState<'default' | 'alphabetical' | 'date_desc' | 'date_asc'>('default')
+  const [trashOpen, setTrashOpen] = useState(false)
+
+  // Carregar rascunhos excluídos do LocalStorage
+  const [trashItems, setTrashItems] = useState<TrashItem[]>(() => {
+    try {
+      const saved = localStorage.getItem('pardallab_reminders_trash')
+      return saved ? JSON.parse(saved) : []
+    } catch {
+      return []
+    }
+  })
+
+  const saveTrash = (items: TrashItem[]) => {
+    setTrashItems(items)
+    try {
+      localStorage.setItem('pardallab_reminders_trash', JSON.stringify(items))
+    } catch (e) {
+      console.error('Error saving trash:', e)
+    }
+  }
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -36,32 +62,64 @@ export default function RemindersPage() {
     toast.success('Lembrete atualizado!')
   }
 
-  const pendingCount = reminders.filter(r => !r.completed).length
-  const completedCount = reminders.filter(r => r.completed).length
+  // Enviar para a Lixeira local e deletar do Supabase
+  const handleDeleteReminder = async (reminder: Reminder) => {
+    const newItem: TrashItem = {
+      id: reminder.id,
+      content: reminder.content,
+      deletedAt: new Date().toISOString()
+    }
+    saveTrash([newItem, ...trashItems])
+    await deleteReminder(reminder.id)
+    toast.success('Tarefa enviada para a lixeira!')
+  }
 
-  const filteredReminders = reminders.filter(r =>
+  // Restaurar tarefa excluída do LocalStorage de volta ao Supabase
+  const handleRestoreDeleted = async (item: TrashItem) => {
+    await createReminder(item.content)
+    saveTrash(trashItems.filter(t => t.id !== item.id))
+    toast.success('Tarefa restaurada!')
+  }
+
+  // Excluir permanentemente da Lixeira local
+  const handlePermanentDelete = (id: string) => {
+    if (confirm('Excluir esta tarefa permanentemente?')) {
+      saveTrash(trashItems.filter(t => t.id !== id))
+      toast.success('Tarefa excluída permanentemente!')
+    }
+  }
+
+  // Esvaziar a lixeira completa (excluir os concluídos do Supabase e limpar o LocalStorage)
+  const handleClearTrash = async () => {
+    if (confirm('Esvaziar a lixeira? Todos os itens concluídos e excluídos serão apagados permanentemente.')) {
+      for (const r of completedReminders) {
+        await deleteReminder(r.id)
+      }
+      saveTrash([])
+      toast.success('Lixeira esvaziada!')
+    }
+  }
+
+  const activeReminders = reminders.filter(r => !r.completed)
+  const completedReminders = reminders.filter(r => r.completed)
+
+  const pendingCount = activeReminders.length
+  const completedCount = completedReminders.length
+
+  const filteredReminders = activeReminders.filter(r =>
     r.content.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
   const sortedReminders = [...filteredReminders].sort((a, b) => {
     if (sortMode === 'alphabetical') {
-      if (a.completed !== b.completed) {
-        return a.completed ? 1 : -1
-      }
       return a.content.localeCompare(b.content, 'pt-BR')
     }
     if (sortMode === 'date_desc') {
-      if (a.completed !== b.completed) {
-        return a.completed ? 1 : -1
-      }
       const dateA = a.created_at ? new Date(a.created_at).getTime() : 0
       const dateB = b.created_at ? new Date(b.created_at).getTime() : 0
       return dateB - dateA
     }
     if (sortMode === 'date_asc') {
-      if (a.completed !== b.completed) {
-        return a.completed ? 1 : -1
-      }
       const dateA = a.created_at ? new Date(a.created_at).getTime() : 0
       const dateB = b.created_at ? new Date(b.created_at).getTime() : 0
       return dateA - dateB
@@ -71,6 +129,7 @@ export default function RemindersPage() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-8">
+      {/* Header */}
       <div className="flex items-center gap-3">
         <div className="bg-amber-100 p-3 rounded-2xl">
           <ListTodo className="h-8 w-8 text-amber-600" />
@@ -78,11 +137,12 @@ export default function RemindersPage() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-slate-800">Bloco de Pendências</h1>
           <p className="text-slate-500">
-            {pendingCount} pendente{pendingCount !== 1 ? 's' : ''} · {completedCount} concluída{completedCount !== 1 ? 's' : ''}
+            {pendingCount} pendente{pendingCount !== 1 ? 's' : ''} · {completedCount} concluída{completedCount !== 1 ? 's' : ''} na lixeira
           </p>
         </div>
       </div>
 
+      {/* Input de criação e filtros */}
       <Card className="border-none shadow-lg bg-white overflow-hidden">
         <CardHeader className="bg-slate-50/50 border-b py-4 space-y-3">
           <form onSubmit={handleAdd} className="flex gap-2">
@@ -96,7 +156,7 @@ export default function RemindersPage() {
               <Plus className="h-5 w-5" />
             </Button>
           </form>
-          {reminders.length > 0 && (
+          {activeReminders.length > 0 && (
             <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
               <div className="relative flex-1 min-w-[150px] flex items-center">
                 <Search className="absolute left-3 h-4 w-4 text-slate-400 pointer-events-none" />
@@ -155,12 +215,14 @@ export default function RemindersPage() {
             </div>
           )}
         </CardHeader>
+        
+        {/* Lista de Ativos */}
         <CardContent className="p-0">
           <div className="divide-y divide-slate-100">
-            {reminders.length === 0 ? (
+            {activeReminders.length === 0 ? (
               <div className="p-12 text-center text-slate-400 space-y-2">
                 <Calendar className="h-12 w-12 mx-auto opacity-20" />
-                <p>Nenhuma pendência. Aproveite o sossego! 🎉</p>
+                <p>Nenhuma pendência ativa. Aproveite o sossego! 🎉</p>
               </div>
             ) : filteredReminders.length === 0 ? (
               <div className="p-12 text-center text-slate-400 space-y-2">
@@ -171,10 +233,7 @@ export default function RemindersPage() {
               sortedReminders.map((reminder) => (
                 <div 
                   key={reminder.id} 
-                  className={cn(
-                    "group flex items-center gap-4 p-4 transition-all hover:bg-slate-50/50",
-                    reminder.completed && "opacity-60 bg-slate-50/30"
-                  )}
+                  className="group flex items-center gap-4 p-4 transition-all hover:bg-slate-50/50"
                 >
                   <Checkbox 
                     checked={reminder.completed}
@@ -199,10 +258,7 @@ export default function RemindersPage() {
                       </div>
                     ) : (
                       <div className="flex items-center justify-between gap-4 w-full min-w-0">
-                        <p className={cn(
-                          "text-base font-medium text-slate-700 truncate transition-all",
-                          reminder.completed && "line-through text-slate-400"
-                        )}>
+                        <p className="text-base font-medium text-slate-700 truncate transition-all">
                           {reminder.content}
                         </p>
                         <span className="text-[11px] text-slate-400 shrink-0 font-medium bg-slate-50 px-2 py-0.5 rounded border border-slate-100">
@@ -213,12 +269,12 @@ export default function RemindersPage() {
                   </div>
 
                   <div className="flex gap-1 transition-opacity">
-                    {!reminder.completed && editingId !== reminder.id && (
+                    {editingId !== reminder.id && (
                       <Button size="icon" variant="ghost" className="h-8 w-8 text-slate-400 hover:text-blue-500" onClick={() => handleStartEdit(reminder)}>
                         <Pencil className="h-4 w-4" />
                       </Button>
                     )}
-                    <Button size="icon" variant="ghost" className="h-8 w-8 text-slate-400 hover:text-rose-500" onClick={() => deleteReminder(reminder.id)}>
+                    <Button size="icon" variant="ghost" className="h-8 w-8 text-slate-400 hover:text-rose-500" onClick={() => handleDeleteReminder(reminder)}>
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
@@ -229,21 +285,125 @@ export default function RemindersPage() {
         </CardContent>
       </Card>
 
-      {completedCount > 0 && (
-        <div className="text-center">
-          <Button 
-            variant="ghost" 
-            className="text-xs text-slate-400 hover:text-rose-500"
-            onClick={() => {
-              if(confirm('Limpar todas as tarefas concluídas?')) {
-                reminders.filter(r => r.completed).forEach(r => deleteReminder(r.id))
-              }
-            }}
+      {/* Lixeira Collapsible */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between border-b pb-2">
+          <button 
+            type="button"
+            onClick={() => setTrashOpen(!trashOpen)}
+            className="flex items-center gap-2 text-slate-500 hover:text-slate-700 text-sm font-semibold transition-colors focus:outline-none"
           >
-            Limpar {completedCount} tarefa{completedCount !== 1 ? 's' : ''} concluída{completedCount !== 1 ? 's' : ''}
-          </Button>
+            <Trash2 className="h-4 w-4" />
+            Lixeira ({completedReminders.length + trashItems.length} itens)
+            {trashOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+          </button>
+          
+          {(completedReminders.length > 0 || trashItems.length > 0) && (
+            <Button 
+              variant="ghost" 
+              className="text-xs text-rose-500 hover:text-rose-600 hover:bg-rose-50 h-8 px-2"
+              onClick={handleClearTrash}
+            >
+              Esvaziar Lixeira
+            </Button>
+          )}
         </div>
-      )}
+
+        {trashOpen && (
+          <Card className="border border-slate-100 shadow-sm bg-slate-50/50 overflow-hidden">
+            <CardContent className="p-0">
+              <div className="divide-y divide-slate-100">
+                {completedReminders.length === 0 && trashItems.length === 0 ? (
+                  <div className="p-8 text-center text-slate-400 text-xs">
+                    Lixeira vazia.
+                  </div>
+                ) : (
+                  <>
+                    {/* Itens concluídos */}
+                    {completedReminders.map((reminder) => (
+                      <div 
+                        key={reminder.id} 
+                        className="flex items-center gap-4 p-3 bg-white/60 opacity-80 hover:opacity-100 transition-all"
+                      >
+                        <Checkbox 
+                          checked={true}
+                          onCheckedChange={() => 
+                            toggleReminder({ id: reminder.id, completed: false })
+                          }
+                          className="h-5 w-5 border-slate-300 data-[state=checked]:bg-amber-500 data-[state=checked]:border-amber-500"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-slate-600 line-through truncate">
+                            {reminder.content}
+                          </p>
+                        </div>
+                        <span className="text-[10px] text-emerald-600 font-semibold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">
+                          Concluído
+                        </span>
+                        <div className="flex gap-1">
+                          <Button 
+                            size="icon" 
+                            variant="ghost" 
+                            className="h-8 w-8 text-slate-400 hover:text-rose-500" 
+                            onClick={async () => {
+                              if (confirm('Excluir esta tarefa permanentemente?')) {
+                                await deleteReminder(reminder.id)
+                                toast.success('Tarefa excluída permanentemente!')
+                              }
+                            }}
+                            title="Excluir Permanentemente"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+
+                    {/* Itens deletados */}
+                    {trashItems.map((item) => (
+                      <div 
+                        key={item.id} 
+                        className="flex items-center gap-4 p-3 bg-white/60 opacity-80 hover:opacity-100 transition-all"
+                      >
+                        <div className="h-5 w-5 flex items-center justify-center">
+                          <Trash2 className="h-4 w-4 text-slate-400" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-slate-600 truncate">
+                            {item.content}
+                          </p>
+                        </div>
+                        <span className="text-[10px] text-rose-600 font-semibold bg-rose-50 px-2 py-0.5 rounded border border-rose-100">
+                          Excluído
+                        </span>
+                        <div className="flex gap-1 items-center">
+                          <Button 
+                            size="sm" 
+                            variant="ghost" 
+                            className="h-8 px-2 text-slate-500 hover:text-amber-600" 
+                            onClick={() => handleRestoreDeleted(item)}
+                          >
+                            Restaurar
+                          </Button>
+                          <Button 
+                            size="icon" 
+                            variant="ghost" 
+                            className="h-8 w-8 text-slate-400 hover:text-rose-500" 
+                            onClick={() => handlePermanentDelete(item.id)}
+                            title="Excluir Permanentemente"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
     </div>
   )
 }
