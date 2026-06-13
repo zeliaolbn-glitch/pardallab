@@ -170,7 +170,7 @@ export default function RemindersPage() {
                     )}
                   </div>
 
-                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex gap-1 transition-opacity">
                     {!reminder.completed && editingId !== reminder.id && (
                       <Button size="icon" variant="ghost" className="h-8 w-8 text-slate-400 hover:text-blue-500" onClick={() => handleStartEdit(reminder)}>
                         <Pencil className="h-4 w-4" />
