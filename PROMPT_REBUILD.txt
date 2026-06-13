@@ -1,0 +1,29 @@
+/*
+PROMPT_REBUILD.txt – Prompt de reconstrução automática para replicar o projeto
+
+Estrutura geral:
+- Frontend: React + Vite, TypeScript, UI baseada em Tailwind CSS com componentes customizados (Card, Button, Input, etc.)
+- Backend: Node.js (Express) rodando em Hostinger / Netlify Functions, integrações com Supabase e Telegram Bot
+- Banco de dados: Supabase (PostgreSQL) com tabelas: ideas, projects, tools, standalone_links, glossary, reminders, tutorials
+- Autenticação: Supabase Auth
+- Integrações externas: Telegram Bot (token configurável), Gemini AI (chave no .env), YouTube/Vimeo embeds, exportação CSV
+- Deploy: Dockerfile disponível para containerização, scripts de instalação para Windows (install.bat) e Linux (install-ubuntu.sh)
+- Variáveis de ambiente necessárias (.env):
+  - TELEGRAM_BOT_TOKEN
+  - SUPABASE_URL
+  - SUPABASE_SERVICE_ROLE_KEY
+  - GEMINI_API_KEY
+  - NEXT_PUBLIC_SUPABASE_ANON_KEY (se usado no frontend)
+
+Comandos de setup:
+1. Criar e ativar venv (Python) -> python -m venv .venv && .\.venv\Scripts\activate (Windows) ou source .venv/bin/activate (Linux)
+2. Instalar dependências de backend: npm ci
+3. Instalar dependências Python (se houver): pip install -r requirements.txt
+4. Configurar .env com as variáveis acima
+5. Iniciar o frontend: npm run dev
+6. Iniciar o backend: npm start (ou node backend_hostinger/server.js)
+7. Opcional: Docker build -> docker build -t crm-ideias .
+8. Opcional: Deploy no Netlify -> netlify deploy --prod
+
+Este prompt permite reproduzir toda a configuração do projeto em outra estação de trabalho.
+*/

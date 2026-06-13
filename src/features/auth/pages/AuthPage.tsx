@@ -1,99 +1,90 @@
 import { useState } from 'react'
-import { supabase } from '@/lib/supabase'
+import { useAuth } from '../hooks/useAuth'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { useAuth } from '@/features/auth/hooks/useAuth'
+import { Label } from '@/components/ui/label'
+import { LogIn } from 'lucide-react'
 
 export default function AuthPage() {
-  const { signInWithGoogle } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
-  const [message, setMessage] = useState('')
+  const { signIn } = useAuth()
 
-  const handleEmailLogin = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-    setMessage('')
-    
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
-
-    if (error) {
-      setMessage(error.message)
+    try {
+      await signIn(email, password)
+    } catch (err) {
+      // O toast de erro já é disparado no hook
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
-  }
-
-  const handleSignUp = async () => {
-    setLoading(true)
-    setMessage('')
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-    })
-    if (error) setMessage(error.message)
-    else setMessage('Check your email for the confirmation link!')
-    setLoading(false)
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 p-4">
-      <div className="w-full max-w-md space-y-8 rounded-xl bg-white p-8 shadow-lg">
-        <div className="text-center">
-          <h1 className="text-3xl font-extrabold text-blue-600">IdeaFlow</h1>
-          <p className="mt-2 text-gray-600">Transforme suas ideias em projetos incríveis</p>
-        </div>
-
-        <div className="mt-8 space-y-4">
-          <Button 
-            onClick={signInWithGoogle} 
-            variant="outline" 
-            className="w-full py-6 text-lg font-semibold"
-          >
-            Entrar com Google
-          </Button>
-
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-gray-300"></span>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="bg-white px-2 text-gray-500">Ou use seu email</span>
-            </div>
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
+      <div className="w-full max-w-md space-y-8">
+        <div className="text-center space-y-4">
+          <div className="flex flex-col items-center justify-center gap-4">
+            <img 
+              src="/logo.png" 
+              alt="PardalLab Logo" 
+              className="h-32 w-32 object-contain drop-shadow-xl animate-in zoom-in duration-700"
+              onError={(e) => (e.currentTarget.style.display = 'none')}
+            />
+            <h1 className="text-4xl font-black text-slate-900 tracking-tighter">
+              Pardal<span className="text-blue-600">Lab</span>
+            </h1>
           </div>
-
-          <form onSubmit={handleEmailLogin} className="space-y-4">
-            <Input
-              type="email"
-              placeholder="seu@email.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-            <Input
-              type="password"
-              placeholder="Sua senha"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-            <div className="flex gap-2">
-              <Button type="submit" disabled={loading} className="flex-1 bg-blue-600 hover:bg-blue-700">
-                Entrar
-              </Button>
-              <Button type="button" onClick={handleSignUp} disabled={loading} variant="ghost" className="flex-1">
-                Cadastrar
-              </Button>
-            </div>
-          </form>
-
-          {message && (
-            <p className="text-center text-sm font-medium text-red-500">{message}</p>
-          )}
+          <p className="text-slate-500 font-medium italic">"Seu caos criativo, organizado com inteligência."</p>
         </div>
+
+        <Card className="border-none shadow-2xl ring-1 ring-slate-200 bg-white/80 backdrop-blur-sm">
+          <CardHeader className="space-y-1">
+            <CardTitle className="text-2xl font-bold text-center">Login Administrativo</CardTitle>
+            <CardDescription className="text-center">
+              Apenas administradores cadastrados podem acessar.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">E-mail</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="seu@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="bg-slate-50 border-slate-200"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="password">Senha</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="bg-slate-50 border-slate-200"
+                  required
+                />
+              </div>
+              <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 h-11" disabled={loading}>
+                {loading ? 'Validando Acesso...' : 'Entrar no PardalLab'}
+                <LogIn className="ml-2 h-4 w-4" />
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+
+        <p className="text-center text-xs text-slate-400">
+          Acesso restrito &copy; {new Date().getFullYear()} PardalLab.
+        </p>
       </div>
     </div>
   )

@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
-import type { Idea, CreateIdeaInput } from '../types'
+import type { Idea, IdeaStatus } from '../types'
+import { toast } from 'sonner'
 
 export function useIdeas() {
   const queryClient = useQueryClient()
@@ -12,20 +13,21 @@ export function useIdeas() {
         .from('ideas')
         .select('*')
         .order('created_at', { ascending: false })
-
+      
       if (error) throw error
       return data as Idea[]
     }
   })
 
   const createIdeaMutation = useMutation({
-    mutationFn: async (newIdea: CreateIdeaInput) => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('User not authenticated')
-
+    mutationFn: async (newIdea: { title: string; description: string; category: string }) => {
       const { data, error } = await supabase
         .from('ideas')
-        .insert([{ ...newIdea, user_id: user.id }])
+        .insert([{
+          ...newIdea,
+          status: 'pending' as IdeaStatus,
+          created_at: new Date().toISOString()
+        }])
         .select()
         .single()
 
@@ -43,18 +45,32 @@ export function useIdeas() {
         .from('ideas')
         .delete()
         .eq('id', id)
-
+      
       if (error) throw error
     },
-    onSuccess: () => {
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ['ideas'] })
+      const previousIdeas = queryClient.getQueryData(['ideas'])
+      queryClient.setQueryData(['ideas'], (old: Idea[] | undefined) => {
+        if (!Array.isArray(old)) return []
+        return old.filter(i => i.id !== id)
+      })
+      return { previousIdeas }
+    },
+    onError: (_err, _id, context) => {
+      if (context?.previousIdeas) {
+        queryClient.setQueryData(['ideas'], context.previousIdeas)
+      }
+      toast.error('Erro ao deletar ideia do Supabase.')
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['ideas'] })
     }
   })
 
   return {
-    ideas: ideasQuery.data ?? [],
+    ideas: Array.isArray(ideasQuery.data) ? ideasQuery.data : [],
     isLoading: ideasQuery.isLoading,
-    error: ideasQuery.error,
     createIdea: createIdeaMutation.mutateAsync,
     isCreating: createIdeaMutation.isPending,
     deleteIdea: deleteIdeaMutation.mutateAsync

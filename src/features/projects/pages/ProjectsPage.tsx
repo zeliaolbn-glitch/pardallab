@@ -1,90 +1,177 @@
 import { useProjects } from '../hooks/useProjects'
-import { Card, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import { PROJECT_STATUS_FLOW, type ProjectStatus, type Project } from '../types'
+import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Trash2, FolderGit2, MessageSquare, Send } from 'lucide-react'
+import { Trash2, MessageSquare, Calendar, Video, Smartphone, ListChecks } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { AIAssistantModal } from '../components/AIAssistantModal'
-import { getWhatsAppUrl, getTelegramUrl } from '@/lib/social-links'
+import { EditProjectModal } from '../components/EditProjectModal'
+import { getWhatsAppUrl } from '@/lib/social-links'
+import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd'
+import { toast } from 'sonner'
 
 export default function ProjectsPage() {
-  const { projects, isLoading, deleteProject } = useProjects()
+  const { projects, isLoading, updateProjectStatus, deleteProject } = useProjects()
+
+  const handleDelete = async (id: string, title: string) => {
+    if (window.confirm(`Tem certeza que deseja deletar o projeto "${title}"?`)) {
+      try {
+        await deleteProject(id)
+        toast.success('Projeto removido com sucesso!')
+      } catch (err) {
+        toast.error('Erro ao remover projeto.')
+      }
+    }
+  }
+
+  const onDragEnd = async (result: DropResult) => {
+    const { destination, source, draggableId } = result
+
+    if (!destination) return
+    if (destination.droppableId === source.droppableId && destination.index === source.index) return
+
+    try {
+      await updateProjectStatus({ 
+        id: draggableId, 
+        status: destination.droppableId as ProjectStatus 
+      })
+      toast.success('Status atualizado!')
+    } catch (err) {
+      toast.error('Erro ao atualizar status.')
+    }
+  }
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <Skeleton className="h-10 w-[200px]" />
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-[200px] w-full rounded-xl" />
-          ))}
-        </div>
+      <div className="flex gap-4 overflow-x-auto pb-4">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="min-w-[300px] space-y-4">
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-[200px] w-full rounded-xl" />
+          </div>
+        ))}
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">Projetos</h1>
+    <div className="h-[calc(100vh-120px)] flex flex-col space-y-6">
+      <div className="flex items-center justify-between px-2">
+        <h1 className="text-3xl font-bold tracking-tight text-slate-900">Evolução de Projetos</h1>
       </div>
 
-      {projects.length === 0 ? (
-        <div className="flex min-h-[400px] flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-white p-12 text-center">
-          <FolderGit2 className="h-12 w-12 text-gray-300" />
-          <h3 className="mt-4 text-lg font-medium text-gray-900">Nenhum projeto ativo</h3>
-          <p className="mt-2 text-gray-500">Transforme suas ideias em projetos reais para começar a gerenciá-los.</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {projects.map((project) => (
-            <Card key={project.id} className="flex flex-col border-none shadow-md">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <Badge className="bg-green-100 text-green-700 hover:bg-green-100">
-                    {project.status === 'planning' ? 'Planejamento' : project.status}
-                  </Badge>
-                  <span className="text-xs text-gray-400">
-                    {new Date(project.created_at).toLocaleDateString()}
-                  </span>
-                </div>
-                <CardTitle className="mt-2">{project.title}</CardTitle>
-                <CardDescription className="line-clamp-3">
-                  {project.description || 'Sem descrição.'}
-                </CardDescription>
-              </CardHeader>
-              <CardFooter className="mt-auto flex justify-between border-t bg-gray-50/50 p-4">
-                <div className="flex gap-2">
-                  <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-600" onClick={() => deleteProject(project.id)}>
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="text-green-600"
-                    onClick={() => window.open(getWhatsAppUrl(`Confira meu novo projeto no IdeaFlow: ${project.title}`), '_blank')}
+      <DragDropContext onDragEnd={onDragEnd}>
+        <div className="flex-1 flex gap-4 overflow-x-auto pb-6 scrollbar-hide">
+          {PROJECT_STATUS_FLOW.map((status: ProjectStatus) => (
+            <div key={status} className="min-w-[320px] max-w-[320px] flex flex-col bg-slate-100/50 rounded-xl p-3 border border-slate-100">
+              <div className="flex items-center justify-between mb-4 px-1">
+                <h3 className="font-bold text-xs text-slate-500 uppercase tracking-widest">
+                  {status}
+                </h3>
+                <span className="bg-white px-2 py-0.5 rounded-full text-[10px] font-bold text-blue-600 shadow-sm border border-blue-50">
+                  {projects.filter((p: Project) => p.status === status).length}
+                </span>
+              </div>
+
+              <Droppable droppableId={status}>
+                {(provided, snapshot) => (
+                  <div
+                    {...provided.droppableProps}
+                    ref={provided.innerRef}
+                    className={`flex-1 space-y-3 transition-colors rounded-md ${
+                      snapshot.isDraggingOver ? 'bg-blue-50/50' : ''
+                    }`}
                   >
-                    <MessageSquare className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="text-blue-500"
-                    onClick={() => window.open(getTelegramUrl(`Confira meu novo projeto no IdeaFlow: ${project.title}`), '_blank')}
-                  >
-                    <Send className="h-4 w-4" />
-                  </Button>
-                </div>
-                <AIAssistantModal 
-                  projectId={project.id}
-                  title={project.title} 
-                  description={project.description || ''} 
-                />
-              </CardFooter>
-            </Card>
+                    {projects
+                      .filter((p: Project) => p.status === status)
+                      .map((project: Project, index: number) => (
+                        <Draggable key={project.id} draggableId={project.id} index={index}>
+                          {(provided, snapshot) => (
+                            <div
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              {...provided.dragHandleProps}
+                              className={`transition-transform ${snapshot.isDragging ? 'rotate-2' : ''}`}
+                            >
+                              <Card className="border-none shadow-sm hover:shadow-md transition-all group bg-white ring-1 ring-slate-200/50">
+                                <CardHeader className="p-4 space-y-3">
+                                  <div className="flex justify-between items-start gap-2">
+                                    <CardTitle className="text-sm font-bold leading-tight group-hover:text-blue-600 transition-colors">
+                                      {project.title}
+                                    </CardTitle>
+                                    <EditProjectModal project={project} />
+                                  </div>
+                                  
+                                  <div className="space-y-1.5">
+                                    {project.project_date && (
+                                      <div className="flex items-center text-[10px] text-slate-400 gap-1.5">
+                                        <Calendar className="h-3 w-3 text-blue-400" />
+                                        {new Date(project.project_date).toLocaleDateString()}
+                                      </div>
+                                    )}
+                                    {project.tools_used && (
+                                      <div className="flex items-center text-[10px] text-slate-400 gap-1.5">
+                                        <Smartphone className="h-3 w-3 text-emerald-400" />
+                                        <span className="truncate">{project.tools_used}</span>
+                                      </div>
+                                    )}
+                                    {project.video_link && (
+                                      <div className="flex items-center text-[10px] text-blue-500 gap-1.5 cursor-pointer hover:underline" onClick={() => window.open(project.video_link, '_blank')}>
+                                        <Video className="h-3 w-3" />
+                                        Ver Origem
+                                      </div>
+                                    )}
+                                    {(project.updates_checklist?.length || 0) > 0 && (
+                                      <div className="flex items-center text-[10px] text-violet-500 font-bold gap-1.5">
+                                        <ListChecks className="h-3 w-3" />
+                                        {project.updates_checklist?.filter(i => i.completed).length}/{project.updates_checklist?.length} Atualizações
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  <CardDescription className="text-[11px] line-clamp-2 pt-1 border-t border-slate-50">
+                                    {project.description || 'Sem descrição.'}
+                                  </CardDescription>
+                                  
+                                  <div className="flex items-center justify-between pt-2">
+                                    <div className="flex gap-1">
+                                      <Button 
+                                        variant="ghost" 
+                                        size="icon" 
+                                        className="h-7 w-7 text-emerald-600 hover:bg-emerald-50"
+                                        onClick={() => window.open(getWhatsAppUrl(`Evolução: ${project.title} - Status: ${project.status}`), '_blank')}
+                                      >
+                                        <MessageSquare className="h-3.5 w-3.5" />
+                                      </Button>
+                                      <Button 
+                                        variant="ghost" 
+                                        size="icon" 
+                                        className="h-7 w-7 text-rose-400 hover:bg-rose-50"
+                                        onClick={() => handleDelete(project.id, project.title)}
+                                      >
+                                        <Trash2 className="h-3.5 w-3.5" />
+                                      </Button>
+                                    </div>
+                                    <AIAssistantModal 
+                                      projectId={project.id}
+                                      title={project.title} 
+                                      description={project.description || ''} 
+                                    />
+                                  </div>
+                                </CardHeader>
+                              </Card>
+                            </div>
+                          )}
+                        </Draggable>
+                      ))}
+                    {provided.placeholder}
+                  </div>
+                )}
+              </Droppable>
+            </div>
           ))}
         </div>
-      )}
+      </DragDropContext>
     </div>
   )
 }

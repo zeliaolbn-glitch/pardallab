@@ -1,0 +1,39 @@
+name: Deploy to Hostinger
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up SSH agent
+        uses: webfactory/ssh-agent@v0.5.4
+        with:
+          ssh-private-key: ${{ secrets.HOSTINGER_SSH_KEY }}
+
+      - name: Define deployment variables
+        env:
+          HOST: ${{ secrets.HOSTINGER_HOST }}
+          USER: ${{ secrets.HOSTINGER_USER }}
+          PORT: ${{ secrets.HOSTINGER_PORT }}
+          APP_DIR: ${{ secrets.HOSTINGER_APP_DIR }}
+        run: |
+          echo "HOST=$HOST" >> $GITHUB_ENV
+          echo "USER=$USER" >> $GITHUB_ENV
+          echo "PORT=$PORT" >> $GITHUB_ENV
+          echo "APP_DIR=$APP_DIR" >> $GITHUB_ENV
+
+      - name: Execute remote deploy script
+        run: |
+          ssh -o StrictHostKeyChecking=no -p ${{ env.PORT }} ${{ env.USER }}@${{ env.HOST }} "set -e; \
+            cd \"${{ env.APP_DIR }}\"; \
+            git fetch origin; \
+            git reset --hard origin/main; \
+            npm ci; \
+            npm run build; \
+            if command -v pm2 > /dev/null; then pm2 restart all || pm2 start npm --name \"crm-ideias\" -- start; else echo 'No pm2; manual restart may be required'; fi"

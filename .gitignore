@@ -22,3 +22,18 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local Netlify folder
+.netlify
+
+# SSH Keys
+hostinger_deploy_key*
+
+# Zips and archives
+*.zip
+*.rar
+*.tar.gz
+
+# Settings and testing
+settings.json
+test-supabase.mjs

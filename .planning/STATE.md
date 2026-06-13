@@ -6,8 +6,8 @@ See: [.planning/PROJECT.md](file:///c:/Users/lenov/.gemini/001-CRM%20IDEIAS/.pla
 **Valor central:** Transformar ideias abstratas em projetos concretos através de um fluxo de trabalho estruturado e assistido por IA.
 **Foco atual:** Fase 5 - Recursos de Apoio (Ferramentas + Tutoriais)
 
-## Milestone Atual: v1.0 - MVP IdeaFlow
-**Objetivo:** Criar o fluxo básico de ideias e projetos com integração Supabase.
+## Milestone Atual: Versão_1.0 - PardalLab
+**Objetivo:** Consolidar o MVP com ferramentas de apoio e links inteligentes.
 
 ### Progresso das Fases
 1. [x] Fase 1: Fundação e Infraestrutura (Supabase + Auth)

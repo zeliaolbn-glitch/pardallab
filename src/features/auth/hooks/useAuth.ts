@@ -1,46 +1,72 @@
-import { useEffect, useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
-import type { Session, User } from '@supabase/supabase-js'
+import { toast } from 'sonner'
+import type { User } from '@supabase/supabase-js'
 
 export function useAuth() {
-  const [session, setSession] = useState<Session | null>(null)
   const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(true)
+  const navigate = useNavigate()
 
   useEffect(() => {
-    // Get initial session
+    // Verificar sessão atual ao carregar
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
       setUser(session?.user ?? null)
-      setLoading(false)
+      setIsLoading(false)
     })
 
-    // Listen for changes
+    // Escutar mudanças na autenticação (login/logout)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session)
       setUser(session?.user ?? null)
-      setLoading(false)
+      setIsLoading(false)
     })
 
-    return () => {
-      subscription.unsubscribe()
-    }
+    return () => subscription.unsubscribe()
   }, [])
 
-  const signOut = () => supabase.auth.signOut()
+  const signIn = async (email: string, password: string) => {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    })
 
-  const signInWithGoogle = () => supabase.auth.signInWithOAuth({
-    provider: 'google',
-    options: {
-      redirectTo: `${window.location.origin}/dashboard`
+    if (error) {
+      toast.error('Erro no login: ' + error.message)
+      throw error
     }
-  })
+
+    toast.success('Bem-vindo ao PardalLab!')
+    navigate('/dashboard')
+    return data
+  }
+
+  const signOut = async () => {
+    await supabase.auth.signOut()
+    localStorage.removeItem('ideaflow_user') // Limpeza legada
+    navigate('/auth')
+    toast.info('Sessão encerrada.')
+  }
+
+  const updatePassword = async (newPassword: string) => {
+    const { error } = await supabase.auth.updateUser({
+      password: newPassword
+    })
+
+    if (error) {
+      toast.error('Erro ao mudar senha: ' + error.message)
+      throw error
+    }
+
+    toast.success('Senha atualizada com sucesso!')
+  }
 
   return {
-    session,
     user,
-    loading,
+    isLoading,
+    signIn,
     signOut,
-    signInWithGoogle
+    updatePassword,
+    isAdmin: user?.email === 'zeliaobn@gmail.com'
   }
 }

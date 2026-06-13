@@ -1,0 +1,61 @@
+## ============================================================
+## PARDALLAB - VARIÁVEIS DE AMBIENTE PARA O NETLIFY
+## ============================================================
+## 
+## COMO USAR:
+## 1. Acesse seu site no Netlify
+## 2. Vá em: Site configuration → Environment variables
+## 3. Clique em "Add a variable" e adicione cada uma abaixo
+## ============================================================
+
+
+## -----------------------------------------------------------
+## 🔵 SUPABASE - Banco de Dados (OBRIGATÓRIO)
+## -----------------------------------------------------------
+## Onde encontrar: Supabase → Settings → API Keys
+
+VITE_SUPABASE_URL=https://cwijbprkkzxydvagilos.supabase.co
+
+## Chave pública (Publishable Key) - para o frontend
+VITE_SUPABASE_ANON_KEY=sb_publishable_HrG_WCPrvr_uItiU3HndCQ_m-q7YDMa
+
+## Chave secreta (Service Role) - para o Bot do Telegram no servidor
+## ⚠️ Encontre em: Supabase → Settings → API Keys → Legacy anon, service_role → service_role
+SUPABASE_URL=https://cwijbprkkzxydvagilos.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=COLE_AQUI_SUA_CHAVE_SERVICE_ROLE
+
+
+## -----------------------------------------------------------
+## 🤖 TELEGRAM BOT (Necessário para envio via Bot)
+## -----------------------------------------------------------
+## Onde encontrar: Telegram → @BotFather → /newbot → copiar o token
+
+TELEGRAM_BOT_TOKEN=COLE_AQUI_O_TOKEN_DO_BOT
+
+
+## -----------------------------------------------------------
+## 🧠 GEMINI AI - Inteligência Artificial (OPCIONAL)
+## -----------------------------------------------------------
+## Onde encontrar: https://aistudio.google.com/apikey
+
+VITE_GEMINI_API_KEY=COLE_AQUI_SUA_CHAVE_GEMINI
+
+
+## -----------------------------------------------------------
+## 📌 RESUMO DO QUE FAZER NO NETLIFY:
+## -----------------------------------------------------------
+##
+##  Nome da variável              Valor
+##  ----------------------------  -----------------------------------
+##  VITE_SUPABASE_URL             https://cwijbprkkzxydvagilos.supabase.co
+##  VITE_SUPABASE_ANON_KEY        sb_publishable_HrG_WCPrvr_uItiU3HndCQ_m-q7YDMa
+##  SUPABASE_URL                  https://cwijbprkkzxydvagilos.supabase.co
+##  SUPABASE_SERVICE_ROLE_KEY     [sua chave service_role do Supabase]
+##  TELEGRAM_BOT_TOKEN            [seu token do @BotFather]
+##  VITE_GEMINI_API_KEY           [sua chave da Google AI Studio]  <- opcional
+##
+## -----------------------------------------------------------
+## ⚠️  IMPORTANTE: Após adicionar as variáveis no Netlify,
+##     clique em "Trigger deploy" para o site recarregar
+##     com as novas configurações.
+## -----------------------------------------------------------

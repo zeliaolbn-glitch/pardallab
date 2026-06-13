@@ -1,4 +1,4 @@
-# IdeaFlow
+# PardalLab Versão_1.0
 
 ## O que é este projeto
 IdeaFlow é um CRM de ideias e projetos inteligente, desenvolvido para ajudar criadores a organizar, desenvolver e lançar suas ideias de forma profissional. É uma aplicação web responsiva construída com React e Vite, utilizando Tailwind CSS e Shadcn/UI para a interface, e Supabase para o backend e autenticação.

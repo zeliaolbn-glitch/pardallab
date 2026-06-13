@@ -1,81 +1,192 @@
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
+import { useState } from 'react'
+import { useTools, type Tool } from '../hooks/useTools'
+import { Card, CardContent } from '@/components/ui/card'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Wrench, Plus, Pencil, Trash2, Key, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { ExternalLink, Wrench } from 'lucide-react'
-
-const tools = [
-  {
-    name: 'Canva',
-    description: 'Design gráfico simplificado para criar logos e posts.',
-    url: 'https://canva.com',
-    category: 'Design'
-  },
-  {
-    name: 'Replicate',
-    description: 'Execute modelos de IA na nuvem via API.',
-    url: 'https://replicate.com',
-    category: 'IA'
-  },
-  {
-    name: 'Notion',
-    description: 'Espaço de trabalho completo para notas e docs.',
-    url: 'https://notion.so',
-    category: 'Produtividade'
-  },
-  {
-    name: 'Vercel',
-    description: 'Plataforma para deploy rápido de apps frontend.',
-    url: 'https://vercel.com',
-    category: 'DevOps'
-  },
-  {
-    name: 'Supabase',
-    description: 'Backend as a Service com banco de dados Postgres.',
-    url: 'https://supabase.com',
-    category: 'Backend'
-  },
-  {
-    name: 'Cursor',
-    description: 'Editor de código com IA integrada para acelerar o dev.',
-    url: 'https://cursor.sh',
-    category: 'Dev'
-  }
-]
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { toast } from 'sonner'
+import { Badge } from '@/components/ui/badge'
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
+import { ExternalLink, Globe } from 'lucide-react'
 
 export default function ToolsPage() {
+  const { tools, createTool, updateTool, deleteTool } = useTools()
+  const [open, setOpen] = useState(false)
+  const [editTool, setEditTool] = useState<Tool | null>(null)
+  const [formData, setFormData] = useState({
+    name: '',
+    main_function: '',
+    accounts: '',
+    description: '',
+    url: '',
+    category: 'Geral'
+  })
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    try {
+      if (editTool) {
+        await updateTool({ id: editTool.id, ...formData })
+        toast.success('Ferramenta atualizada!')
+      } else {
+        await createTool(formData)
+        toast.success('Ferramenta cadastrada!')
+      }
+      setOpen(false)
+      setEditTool(null)
+      setFormData({ name: '', main_function: '', accounts: '', description: '', url: '', category: 'Geral' })
+    } catch (err: any) {
+      console.error(err)
+      toast.error('Erro ao salvar ferramenta: ' + (err.message || 'Verifique os dados.'))
+    }
+  }
+
+  const handleEdit = (tool: Tool) => {
+    setEditTool(tool)
+    setFormData({
+      name: tool.name,
+      main_function: tool.main_function,
+      accounts: tool.accounts || '',
+      description: tool.description || '',
+      url: tool.url || '',
+      category: tool.category || 'Geral'
+    })
+    setOpen(true)
+  }
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-2">
-        <Wrench className="h-8 w-8 text-blue-600" />
-        <h1 className="text-3xl font-bold tracking-tight">Ferramentas Curadas</h1>
-      </div>
-      <p className="text-gray-500 max-w-2xl">
-        Uma seleção de ferramentas essenciais para transformar suas ideias em produtos de mercado.
-      </p>
-
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {tools.map((tool) => (
-          <Card key={tool.name} className="border-none shadow-md hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-blue-600 uppercase tracking-wider">
-                  {tool.category}
-                </span>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Wrench className="h-8 w-8 text-blue-600" />
+          <h1 className="text-3xl font-bold tracking-tight">Catálogo de Ferramentas</h1>
+        </div>
+        
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogTrigger asChild>
+            <Button className="bg-blue-600 hover:bg-blue-700">
+              <Plus className="mr-2 h-4 w-4" /> Nova Ferramenta
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{editTool ? 'Editar Ferramenta' : 'Cadastrar Ferramenta'}</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleSubmit} className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label>Nome da Ferramenta</Label>
+                <Input required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
               </div>
-              <CardTitle className="mt-2">{tool.name}</CardTitle>
-              <CardDescription>{tool.description}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button 
-                variant="outline" 
-                className="w-full text-blue-600 border-blue-100 hover:bg-blue-50"
-                onClick={() => window.open(tool.url, '_blank')}
-              >
-                <ExternalLink className="mr-2 h-4 w-4" /> Visitar Ferramenta
-              </Button>
-            </CardContent>
-          </Card>
-        ))}
+              <div className="space-y-2">
+                <Label>Principal Função</Label>
+                <Input required value={formData.main_function} onChange={e => setFormData({...formData, main_function: e.target.value})} />
+              </div>
+              <div className="space-y-2">
+                <Label>URL / Link</Label>
+                <Input value={formData.url} onChange={e => setFormData({...formData, url: e.target.value})} placeholder="https://..." />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Descrição / Notas da Ferramenta</Label>
+                <Textarea value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} placeholder="Para que serve esta ferramenta?" />
+              </div>
+              
+              <div className="p-3 bg-slate-50 rounded-lg space-y-3 border border-slate-200">
+                <Label className="text-slate-700 font-bold flex items-center gap-2"><Key className="h-4 w-4" /> Cadastros Realizados (Contas)</Label>
+                <div className="space-y-2">
+                  <Label className="text-xs">Dados de Acesso (Email/Senha/Notas)</Label>
+                  <Input value={formData.accounts} onChange={e => setFormData({...formData, accounts: e.target.value})} placeholder="admin@email.com | senha123" />
+                </div>
+              </div>
+
+              <DialogFooter>
+                <Button type="submit" className="w-full">Salvar Dados</Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
+
+      <Card className="border-none shadow-md overflow-hidden">
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader className="bg-blue-50/50">
+              <TableRow>
+                <TableHead>Ferramenta</TableHead>
+                <TableHead>Função</TableHead>
+                <TableHead>Link</TableHead>
+                <TableHead>Conta Vinculada</TableHead>
+                <TableHead className="text-right">Ações</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {tools.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={4} className="h-32 text-center text-gray-500">
+                    Nenhuma ferramenta cadastrada ainda.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                tools.map((tool: Tool) => (
+                  <TableRow key={tool.id} className="hover:bg-blue-50/10 transition-colors">
+                    <TableCell className="font-bold text-slate-800">{tool.name}</TableCell>
+                    <TableCell>
+                      <Badge variant="secondary" className="bg-blue-50 text-blue-700 hover:bg-blue-100 border-none">
+                        {tool.main_function}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {tool.url ? (
+                        <HoverCard>
+                          <HoverCardTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-500" onClick={() => window.open(tool.url, '_blank')}>
+                              <Globe className="h-4 w-4" />
+                            </Button>
+                          </HoverCardTrigger>
+                          <HoverCardContent className="w-80">
+                            <div className="space-y-2">
+                              <p className="text-sm font-bold flex items-center gap-2 text-blue-600">
+                                <ExternalLink className="h-3 w-3" /> {tool.name}
+                              </p>
+                              <p className="text-xs text-slate-500">{tool.description || 'Sem descrição.'}</p>
+                              <p className="text-[10px] text-slate-400 break-all">{tool.url}</p>
+                            </div>
+                          </HoverCardContent>
+                        </HoverCard>
+                      ) : (
+                        <span className="text-slate-300">-</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {tool.accounts ? (
+                        <div className="flex flex-col gap-0.5">
+                          <span className="text-xs font-medium text-slate-600 flex items-center gap-1.5"><User className="h-3 w-3" /> {tool.accounts}</span>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-slate-400 italic">Nenhuma conta salva</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button size="icon" variant="ghost" className="h-8 w-8 text-blue-600" onClick={() => handleEdit(tool)}>
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button size="icon" variant="ghost" className="h-8 w-8 text-rose-500" onClick={() => deleteTool(tool.id)}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
     </div>
   )
 }

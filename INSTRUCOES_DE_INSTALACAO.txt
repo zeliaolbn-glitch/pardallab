@@ -1,0 +1,67 @@
+INSTRUCOES_DE_INSTALACAO.txt – Guia de Instalação
+
+# Pré-requisitos
+- **Node.js** (v18 ou superior)
+- **npm** (ou yarn)
+- **Python 3.9+** (para scripts auxiliares)
+- **Git** (opcional, para clonar o repositório)
+
+# 1. Clone o repositório
+```bash
+git clone <REPO_URL>
+cd 001-CRM IDEIAS
+```
+
+# 2. Configurar variáveis de ambiente
+Crie um arquivo `.env` na raiz do projeto com as seguintes chaves (substitua pelos valores reais):
+```
+TELEGRAM_BOT_TOKEN=seu_token_telegram
+SUPABASE_URL=suasupabase_url
+SUPABASE_SERVICE_ROLE_KEY=seu_key
+GEMINI_API_KEY=sua_chave_gemini
+NEXT_PUBLIC_SUPABASE_ANON_KEY=chave_publica
+```
+
+# 3. Instalar dependências (frontend)
+```bash
+npm ci
+```
+
+# 4. Instalar dependências do backend (Node.js)
+```bash
+cd backend_hostinger
+npm ci
+cd ..
+```
+
+# 5. Instalar dependências Python (scripts auxiliares)
+```bash
+python -m venv .venv
+# Windows
+.\.venv\Scripts\activate
+# Linux/macOS
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+# 6. Executar a aplicação (modo desenvolvimento)
+```bash
+# Inicie o frontend
+npm run dev
+# Em outra janela, inicie o backend
+node backend_hostinger/server.js
+```
+
+# 7. Deploy (Docker)
+```bash
+docker build -t crm-ideias .
+docker run -p 3000:3000 crm-ideias```
+
+# 8. Backup
+Veja o diretório `C:\backups\crm_ideias` para o arquivo zip gerado. 
+
+# 9. Envio automático para Telegram
+Se você confirmou, os arquivos `PROMPT_REBUILD.txt`, `INSTRUCOES_DE_INSTALACAO.txt`, as imagens geradas e o PDF serão enviados ao chat Telegram configurado.
+
+---
+Este documento contempla todas as etapas necessárias para configurar, rodar e empacotar o projeto.

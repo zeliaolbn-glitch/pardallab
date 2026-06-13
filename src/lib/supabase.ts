@@ -4,7 +4,7 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn('Supabase credentials not found. Authentication will not work until VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set in .env.local')
+  console.warn('Supabase URL or Anon Key missing. Check your .env.local file.')
 }
 
 export const supabase = createClient(supabaseUrl || '', supabaseAnonKey || '')
