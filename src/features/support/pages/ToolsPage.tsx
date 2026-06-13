@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useTools, type Tool } from '../hooks/useTools'
 import { Card, CardContent } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Wrench, Plus, Pencil, Trash2, Key, User } from 'lucide-react'
+import { Wrench, Plus, Pencil, Trash2, Key, User, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
@@ -24,6 +24,39 @@ export default function ToolsPage() {
     description: '',
     url: '',
     category: 'Geral'
+  })
+
+  const [sortConfig, setSortConfig] = useState<{
+    key: 'name' | 'main_function' | 'url' | 'accounts' | null
+    direction: 'asc' | 'desc'
+  }>({ key: null, direction: 'asc' })
+
+  const handleSort = (key: 'name' | 'main_function' | 'url' | 'accounts') => {
+    setSortConfig(prev => {
+      if (prev.key === key) {
+        return { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' }
+      }
+      return { key, direction: 'asc' }
+    })
+  }
+
+  const getSortIcon = (key: 'name' | 'main_function' | 'url' | 'accounts') => {
+    if (sortConfig.key !== key) {
+      return <ArrowUpDown className="h-3 w-3 text-slate-400" />
+    }
+    return sortConfig.direction === 'asc' 
+      ? <ArrowUp className="h-3 w-3 text-blue-600 font-bold" />
+      : <ArrowDown className="h-3 w-3 text-blue-600 font-bold" />
+  }
+
+  const sortedTools = [...tools].sort((a, b) => {
+    if (!sortConfig.key) return 0
+    const valA = (a[sortConfig.key] || '').toString().toLowerCase()
+    const valB = (b[sortConfig.key] || '').toString().toLowerCase()
+    
+    if (valA < valB) return sortConfig.direction === 'asc' ? -1 : 1
+    if (valA > valB) return sortConfig.direction === 'asc' ? 1 : -1
+    return 0
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -57,6 +90,7 @@ export default function ToolsPage() {
     })
     setOpen(true)
   }
+
 
   return (
     <div className="space-y-6">
@@ -116,22 +150,50 @@ export default function ToolsPage() {
           <Table>
             <TableHeader className="bg-blue-50/50">
               <TableRow>
-                <TableHead>Ferramenta</TableHead>
-                <TableHead>Função</TableHead>
-                <TableHead>Link</TableHead>
-                <TableHead>Conta Vinculada</TableHead>
-                <TableHead className="text-right">Ações</TableHead>
+                <TableHead 
+                  className="cursor-pointer select-none hover:bg-blue-100/50 transition-colors py-3"
+                  onClick={() => handleSort('name')}
+                >
+                  <div className="flex items-center gap-1.5 font-bold text-slate-700">
+                    Ferramenta {getSortIcon('name')}
+                  </div>
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer select-none hover:bg-blue-100/50 transition-colors py-3"
+                  onClick={() => handleSort('main_function')}
+                >
+                  <div className="flex items-center gap-1.5 font-bold text-slate-700">
+                    Função {getSortIcon('main_function')}
+                  </div>
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer select-none hover:bg-blue-100/50 transition-colors py-3"
+                  onClick={() => handleSort('url')}
+                >
+                  <div className="flex items-center gap-1.5 font-bold text-slate-700">
+                    Link {getSortIcon('url')}
+                  </div>
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer select-none hover:bg-blue-100/50 transition-colors py-3"
+                  onClick={() => handleSort('accounts')}
+                >
+                  <div className="flex items-center gap-1.5 font-bold text-slate-700">
+                    Conta Vinculada {getSortIcon('accounts')}
+                  </div>
+                </TableHead>
+                <TableHead className="text-right font-bold text-slate-700">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {tools.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="h-32 text-center text-gray-500">
+                  <TableCell colSpan={5} className="h-32 text-center text-gray-500">
                     Nenhuma ferramenta cadastrada ainda.
                   </TableCell>
                 </TableRow>
               ) : (
-                tools.map((tool: Tool) => (
+                sortedTools.map((tool: Tool) => (
                   <TableRow key={tool.id} className="hover:bg-blue-50/10 transition-colors">
                     <TableCell className="font-bold text-slate-800">{tool.name}</TableCell>
                     <TableCell>
