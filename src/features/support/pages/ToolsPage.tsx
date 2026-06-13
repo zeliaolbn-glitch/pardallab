@@ -27,11 +27,13 @@ export default function ToolsPage() {
   })
 
   const [sortConfig, setSortConfig] = useState<{
-    key: 'name' | 'main_function' | 'url' | 'accounts' | null
+    key: 'name' | 'main_function' | 'url' | 'accounts' | 'created_at' | null
     direction: 'asc' | 'desc'
   }>({ key: null, direction: 'asc' })
 
-  const handleSort = (key: 'name' | 'main_function' | 'url' | 'accounts') => {
+  const [searchQuery, setSearchQuery] = useState('')
+
+  const handleSort = (key: 'name' | 'main_function' | 'url' | 'accounts' | 'created_at') => {
     setSortConfig(prev => {
       if (prev.key === key) {
         return { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' }
@@ -40,7 +42,7 @@ export default function ToolsPage() {
     })
   }
 
-  const getSortIcon = (key: 'name' | 'main_function' | 'url' | 'accounts') => {
+  const getSortIcon = (key: 'name' | 'main_function' | 'url' | 'accounts' | 'created_at') => {
     if (sortConfig.key !== key) {
       return <ArrowUpDown className="h-3 w-3 text-slate-400" />
     }
@@ -49,7 +51,14 @@ export default function ToolsPage() {
       : <ArrowDown className="h-3 w-3 text-blue-600 font-bold" />
   }
 
-  const sortedTools = [...tools].sort((a, b) => {
+  const filteredTools = tools.filter(tool => 
+    tool.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    tool.main_function.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (tool.description || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (tool.accounts || '').toLowerCase().includes(searchQuery.toLowerCase())
+  )
+
+  const sortedTools = [...filteredTools].sort((a, b) => {
     if (!sortConfig.key) return 0
     const valA = (a[sortConfig.key] || '').toString().toLowerCase()
     const valB = (b[sortConfig.key] || '').toString().toLowerCase()
@@ -91,58 +100,77 @@ export default function ToolsPage() {
     setOpen(true)
   }
 
-
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-2">
           <Wrench className="h-8 w-8 text-blue-600" />
-          <h1 className="text-3xl font-bold tracking-tight">Catálogo de Ferramentas</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-800">Catálogo de Ferramentas</h1>
         </div>
         
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-blue-600 hover:bg-blue-700">
-              <Plus className="mr-2 h-4 w-4" /> Nova Ferramenta
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>{editTool ? 'Editar Ferramenta' : 'Cadastrar Ferramenta'}</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label>Nome da Ferramenta</Label>
-                <Input required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
-              </div>
-              <div className="space-y-2">
-                <Label>Principal Função</Label>
-                <Input required value={formData.main_function} onChange={e => setFormData({...formData, main_function: e.target.value})} />
-              </div>
-              <div className="space-y-2">
-                <Label>URL / Link</Label>
-                <Input value={formData.url} onChange={e => setFormData({...formData, url: e.target.value})} placeholder="https://..." />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Descrição / Notas da Ferramenta</Label>
-                <Textarea value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} placeholder="Para que serve esta ferramenta?" />
-              </div>
-              
-              <div className="p-3 bg-slate-50 rounded-lg space-y-3 border border-slate-200">
-                <Label className="text-slate-700 font-bold flex items-center gap-2"><Key className="h-4 w-4" /> Cadastros Realizados (Contas)</Label>
+        <div className="flex items-center gap-2 flex-1 md:max-w-md">
+          <div className="relative flex-1">
+            <Input
+              placeholder="🔍 Buscar ferramentas..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              className="bg-white border-slate-200 h-10 text-sm shadow-sm pl-8"
+            />
+            {searchQuery && (
+              <button 
+                type="button" 
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs font-medium"
+              >
+                Limpar
+              </button>
+            )}
+          </div>
+          
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-blue-600 hover:bg-blue-700 h-10">
+                <Plus className="mr-2 h-4 w-4" /> Nova Ferramenta
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>{editTool ? 'Editar Ferramenta' : 'Cadastrar Ferramenta'}</DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleSubmit} className="space-y-4 py-4">
                 <div className="space-y-2">
-                  <Label className="text-xs">Dados de Acesso (Email/Senha/Notas)</Label>
-                  <Input value={formData.accounts} onChange={e => setFormData({...formData, accounts: e.target.value})} placeholder="admin@email.com | senha123" />
+                  <Label>Nome da Ferramenta</Label>
+                  <Input required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
                 </div>
-              </div>
+                <div className="space-y-2">
+                  <Label>Principal Função</Label>
+                  <Input required value={formData.main_function} onChange={e => setFormData({...formData, main_function: e.target.value})} />
+                </div>
+                <div className="space-y-2">
+                  <Label>URL / Link</Label>
+                  <Input value={formData.url} onChange={e => setFormData({...formData, url: e.target.value})} placeholder="https://..." />
+                </div>
 
-              <DialogFooter>
-                <Button type="submit" className="w-full">Salvar Dados</Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
+                <div className="space-y-2">
+                  <Label>Descrição / Notas da Ferramenta</Label>
+                  <Textarea value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} placeholder="Para que serve esta ferramenta?" />
+                </div>
+                
+                <div className="p-3 bg-slate-50 rounded-lg space-y-3 border border-slate-200">
+                  <Label className="text-slate-700 font-bold flex items-center gap-2"><Key className="h-4 w-4" /> Cadastros Realizados (Contas)</Label>
+                  <div className="space-y-2">
+                    <Label className="text-xs">Dados de Acesso (Email/Senha/Notas)</Label>
+                    <Input value={formData.accounts} onChange={e => setFormData({...formData, accounts: e.target.value})} placeholder="admin@email.com | senha123" />
+                  </div>
+                </div>
+
+                <DialogFooter>
+                  <Button type="submit" className="w-full">Salvar Dados</Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       <Card className="border-none shadow-md overflow-hidden">
@@ -182,14 +210,28 @@ export default function ToolsPage() {
                     Conta Vinculada {getSortIcon('accounts')}
                   </div>
                 </TableHead>
+                <TableHead 
+                  className="cursor-pointer select-none hover:bg-blue-100/50 transition-colors py-3"
+                  onClick={() => handleSort('created_at')}
+                >
+                  <div className="flex items-center gap-1.5 font-bold text-slate-700">
+                    Criado em {getSortIcon('created_at')}
+                  </div>
+                </TableHead>
                 <TableHead className="text-right font-bold text-slate-700">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {tools.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="h-32 text-center text-gray-500">
+                  <TableCell colSpan={6} className="h-32 text-center text-gray-500">
                     Nenhuma ferramenta cadastrada ainda.
+                  </TableCell>
+                </TableRow>
+              ) : filteredTools.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="h-32 text-center text-gray-500">
+                    Nenhuma ferramenta encontrada com o termo "{searchQuery}".
                   </TableCell>
                 </TableRow>
               ) : (
@@ -231,6 +273,9 @@ export default function ToolsPage() {
                       ) : (
                         <span className="text-xs text-slate-400 italic">Nenhuma conta salva</span>
                       )}
+                    </TableCell>
+                    <TableCell className="text-xs text-slate-500 font-medium">
+                      {tool.created_at ? new Date(tool.created_at).toLocaleDateString('pt-BR') : '-'}
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
