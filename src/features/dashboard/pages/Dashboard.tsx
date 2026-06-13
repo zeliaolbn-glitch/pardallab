@@ -5,7 +5,6 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Lightbulb, Briefcase, CheckCircle2, FileSpreadsheet, Moon, Sun, Pencil, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Notepad } from '@/components/dashboard/Notepad';
 import { QuickReminders } from '@/components/dashboard/QuickReminders'
 import { exportToCsv } from '@/lib/export'
 import { toast } from 'sonner'
