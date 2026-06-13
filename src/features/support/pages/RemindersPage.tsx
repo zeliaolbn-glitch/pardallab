@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useReminders, type Reminder } from '../hooks/useReminders'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
-import { ListTodo, Plus, Pencil, Trash2, Calendar } from 'lucide-react'
+import { ListTodo, Plus, Pencil, Trash2, Calendar, ArrowUpDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
@@ -14,6 +14,7 @@ export default function RemindersPage() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editText, setEditText] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
+  const [sortBy, setSortBy] = useState<'default' | 'alphabetical'>('default')
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -41,6 +42,16 @@ export default function RemindersPage() {
   const filteredReminders = reminders.filter(r =>
     r.content.toLowerCase().includes(searchQuery.toLowerCase())
   )
+
+  const sortedReminders = [...filteredReminders].sort((a, b) => {
+    if (sortBy === 'alphabetical') {
+      if (a.completed !== b.completed) {
+        return a.completed ? 1 : -1
+      }
+      return a.content.localeCompare(b.content, 'pt-BR')
+    }
+    return 0
+  })
 
   return (
     <div className="max-w-3xl mx-auto space-y-8">
@@ -70,22 +81,38 @@ export default function RemindersPage() {
             </Button>
           </form>
           {reminders.length > 0 && (
-            <div className="relative">
-              <Input
-                placeholder="🔍 Filtrar pendências por nome..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="bg-white border-slate-200 h-10 text-sm shadow-sm pl-8"
-              />
-              {searchQuery && (
-                <button 
-                  type="button" 
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs font-medium"
-                >
-                  Limpar
-                </button>
-              )}
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Input
+                  placeholder="🔍 Filtrar pendências por nome..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="bg-white border-slate-200 h-10 text-sm shadow-sm pl-8"
+                />
+                {searchQuery && (
+                  <button 
+                    type="button" 
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs font-medium"
+                  >
+                    Limpar
+                  </button>
+                )}
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setSortBy(prev => prev === 'default' ? 'alphabetical' : 'default')}
+                className={cn(
+                  "h-10 px-3 border-slate-200 shadow-sm flex items-center gap-1.5 text-xs font-medium transition-all",
+                  sortBy === 'alphabetical' 
+                    ? "bg-amber-500 text-white border-amber-500 hover:bg-amber-600 hover:text-white" 
+                    : "bg-white text-slate-600 hover:bg-slate-50"
+                )}
+              >
+                <ArrowUpDown className="h-4 w-4" />
+                {sortBy === 'alphabetical' ? 'Ordem A-Z' : 'Ordem Padrão'}
+              </Button>
             </div>
           )}
         </CardHeader>
@@ -102,7 +129,8 @@ export default function RemindersPage() {
                 <p>Nenhuma pendência encontrada com o nome "{searchQuery}".</p>
               </div>
             ) : (
-              filteredReminders.map((reminder) => (
+              sortedReminders.map((reminder) => (
+
 
                 <div 
                   key={reminder.id} 
