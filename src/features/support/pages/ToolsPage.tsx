@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useTools, type Tool } from '../hooks/useTools'
 import { Card, CardContent } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Wrench, Plus, Pencil, Trash2, Key, User, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
+import { Wrench, Plus, Pencil, Trash2, Key, User, ArrowUpDown, ArrowUp, ArrowDown, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
@@ -109,18 +109,19 @@ export default function ToolsPage() {
         </div>
         
         <div className="flex items-center gap-2 flex-1 md:max-w-md">
-          <div className="relative flex-1">
+          <div className="relative flex-1 flex items-center">
+            <Search className="absolute left-3 h-4 w-4 text-slate-400 pointer-events-none" />
             <Input
-              placeholder="🔍 Buscar ferramentas..."
+              placeholder="Buscar ferramentas..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className="bg-white border-slate-200 h-10 text-sm shadow-sm pl-8"
+              className="bg-white border-slate-200 h-10 text-sm shadow-sm pl-9 pr-16 w-full"
             />
             {searchQuery && (
               <button 
                 type="button" 
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs font-medium"
+                className="absolute right-3 text-slate-400 hover:text-slate-600 text-xs font-medium"
               >
                 Limpar
               </button>
@@ -215,7 +216,7 @@ export default function ToolsPage() {
                   onClick={() => handleSort('created_at')}
                 >
                   <div className="flex items-center gap-1.5 font-bold text-slate-700">
-                    Criado em {getSortIcon('created_at')}
+                    Data de Inserção {getSortIcon('created_at')}
                   </div>
                 </TableHead>
                 <TableHead className="text-right font-bold text-slate-700">Ações</TableHead>
