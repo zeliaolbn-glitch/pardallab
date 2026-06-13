@@ -2,7 +2,7 @@ import { useStandaloneLinks } from '../hooks/useStandaloneLinks'
 import { useProjects } from '@/features/projects/hooks/useProjects'
 import { Card, CardContent } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Video, Plus, ExternalLink, Search, Trash2, ArrowUpDown, Star } from 'lucide-react'
+import { Video, Plus, ExternalLink, Search, Trash2, ArrowUpDown, Star, ArrowUp, ArrowDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useState, useEffect } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog'
@@ -52,6 +52,31 @@ export default function VideoLinksPage() {
     setSortConfig({ key, direction })
   }
 
+  const getSortIcon = (key: string) => {
+    if (sortConfig.key !== key) {
+      return <ArrowUpDown className="h-3 w-3 text-slate-400" />
+    }
+    return sortConfig.direction === 'asc' 
+      ? <ArrowUp className="h-3 w-3 text-blue-600 font-bold" />
+      : <ArrowDown className="h-3 w-3 text-blue-600 font-bold" />
+  }
+
+  const getSortValue = (item: any, key: string) => {
+    if (key === 'main_function') {
+      return (item.main_function || item.video_function || '').toString().toLowerCase()
+    }
+    if (key === 'tool') {
+      return (item.tool || item.video_tool || '').toString().toLowerCase()
+    }
+    if (key === 'rating') {
+      return Number(item.rating || 0)
+    }
+    if (key === 'isAuto') {
+      return item.isAuto ? 1 : 0
+    }
+    return (item[key] || '').toString().toLowerCase()
+  }
+
   // Extrair links dos projetos automáticos
   const projectLinks = (Array.isArray(projects) ? projects : [])
     .filter((p: any) => p.video_link)
@@ -81,8 +106,8 @@ export default function VideoLinksPage() {
     return matchesSearch && matchesFunction && matchesTool
   }).sort((a, b) => {
     if (!sortConfig.key || !sortConfig.direction) return 0
-    const aValue = a[sortConfig.key] || ''
-    const bValue = b[sortConfig.key] || ''
+    const aValue = getSortValue(a, sortConfig.key)
+    const bValue = getSortValue(b, sortConfig.key)
     
     if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1
     if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1
@@ -199,16 +224,37 @@ export default function VideoLinksPage() {
           <Table>
             <TableHeader className="bg-blue-50/50">
               <TableRow>
-                <TableHead className="cursor-pointer hover:bg-blue-100/50 transition-colors" onClick={() => handleSort('isAuto')}>
-                  <div className="flex items-center gap-2">Origem <ArrowUpDown className="h-3 w-3" /></div>
+                <TableHead 
+                  className="cursor-pointer select-none hover:bg-blue-100/50 transition-colors py-3" 
+                  onClick={() => handleSort('isAuto')}
+                >
+                  <div className="flex items-center gap-1.5 font-bold text-slate-700">Origem {getSortIcon('isAuto')}</div>
                 </TableHead>
-                <TableHead className="cursor-pointer hover:bg-blue-100/50 transition-colors" onClick={() => handleSort('title')}>
-                  <div className="flex items-center gap-2">Título <ArrowUpDown className="h-3 w-3" /></div>
+                <TableHead 
+                  className="cursor-pointer select-none hover:bg-blue-100/50 transition-colors py-3" 
+                  onClick={() => handleSort('title')}
+                >
+                  <div className="flex items-center gap-1.5 font-bold text-slate-700">Título {getSortIcon('title')}</div>
                 </TableHead>
-                <TableHead>Função Principal</TableHead>
-                <TableHead>Ferramenta</TableHead>
-                <TableHead>Avaliação</TableHead>
-                <TableHead className="text-right">Ações</TableHead>
+                <TableHead 
+                  className="cursor-pointer select-none hover:bg-blue-100/50 transition-colors py-3" 
+                  onClick={() => handleSort('main_function')}
+                >
+                  <div className="flex items-center gap-1.5 font-bold text-slate-700">Função Principal {getSortIcon('main_function')}</div>
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer select-none hover:bg-blue-100/50 transition-colors py-3" 
+                  onClick={() => handleSort('tool')}
+                >
+                  <div className="flex items-center gap-1.5 font-bold text-slate-700">Ferramenta {getSortIcon('tool')}</div>
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer select-none hover:bg-blue-100/50 transition-colors py-3" 
+                  onClick={() => handleSort('rating')}
+                >
+                  <div className="flex items-center gap-1.5 font-bold text-slate-700">Avaliação {getSortIcon('rating')}</div>
+                </TableHead>
+                <TableHead className="text-right font-bold text-slate-700">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

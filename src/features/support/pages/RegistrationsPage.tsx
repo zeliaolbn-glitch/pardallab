@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useRegistrations, type Registration } from '../hooks/useRegistrations'
 import { Card, CardContent } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { ShieldCheck, Plus, Pencil, Trash2, Calendar, Bell, BellOff, Info } from 'lucide-react'
+import { ShieldCheck, Plus, Pencil, Trash2, Calendar, Bell, BellOff, Info, Search, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
@@ -17,6 +17,52 @@ export default function RegistrationsPage() {
   const { registrations, createRegistration, updateRegistration, deleteRegistration } = useRegistrations()
   const [open, setOpen] = useState(false)
   const [editReg, setEditReg] = useState<Registration | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [sortConfig, setSortConfig] = useState<{
+    key: 'platform' | 'reminder' | 'end_date' | 'bot_alert' | null
+    direction: 'asc' | 'desc'
+  }>({ key: null, direction: 'asc' })
+
+  const handleSort = (key: 'platform' | 'reminder' | 'end_date' | 'bot_alert') => {
+    setSortConfig(prev => {
+      if (prev.key === key) {
+        return { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' }
+      }
+      return { key, direction: 'asc' }
+    })
+  }
+
+  const getSortIcon = (key: 'platform' | 'reminder' | 'end_date' | 'bot_alert') => {
+    if (sortConfig.key !== key) {
+      return <ArrowUpDown className="h-3 w-3 text-slate-400" />
+    }
+    return sortConfig.direction === 'asc' 
+      ? <ArrowUp className="h-3 w-3 text-emerald-600 font-bold" />
+      : <ArrowDown className="h-3 w-3 text-emerald-600 font-bold" />
+  }
+
+  const filteredRegs = registrations.filter(reg => 
+    reg.platform.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (reg.user_account || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (reg.reminder || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (reg.reason || '').toLowerCase().includes(searchQuery.toLowerCase())
+  )
+
+  const sortedRegs = [...filteredRegs].sort((a, b) => {
+    if (!sortConfig.key) return 0
+    let valA = (a[sortConfig.key] || '').toString().toLowerCase()
+    let valB = (b[sortConfig.key] || '').toString().toLowerCase()
+    
+    if (sortConfig.key === 'bot_alert') {
+      valA = a.bot_alert ? 'true' : 'false'
+      valB = b.bot_alert ? 'true' : 'false'
+    }
+
+    if (valA < valB) return sortConfig.direction === 'asc' ? -1 : 1
+    if (valA > valB) return sortConfig.direction === 'asc' ? 1 : -1
+    return 0
+  })
+
   const [formData, setFormData] = useState({
     platform: '',
     user_account: '',
@@ -82,11 +128,31 @@ export default function RegistrationsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-2">
           <ShieldCheck className="h-8 w-8 text-emerald-600" />
-          <h1 className="text-3xl font-bold tracking-tight">Contas e Cadastros</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-800">Contas e Cadastros</h1>
         </div>
+        
+        <div className="flex items-center gap-2 flex-1 md:max-w-md">
+          <div className="relative flex-1 flex items-center">
+            <Search className="absolute left-3 h-4 w-4 text-slate-400 pointer-events-none" />
+            <Input
+              placeholder="Buscar contas e cadastros..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              className="bg-white border-slate-200 h-10 text-sm shadow-sm pl-9 pr-16 w-full"
+            />
+            {searchQuery && (
+              <button 
+                type="button" 
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 text-slate-400 hover:text-slate-600 text-xs font-medium"
+              >
+                Limpar
+              </button>
+            )}
+          </div>
         
         <Dialog open={open} onOpenChange={(val: boolean) => { setOpen(val); if(!val) { setEditReg(null); resetForm() } }}>
           <DialogTrigger asChild>
@@ -152,17 +218,46 @@ export default function RegistrationsPage() {
           </DialogContent>
         </Dialog>
       </div>
+    </div>
 
       <Card className="border-none shadow-md overflow-hidden">
         <CardContent className="p-0">
           <Table>
             <TableHeader className="bg-emerald-50/50">
               <TableRow>
-                <TableHead>Plataforma / Conta</TableHead>
-                <TableHead>Lembrete</TableHead>
-                <TableHead>Datas</TableHead>
-                <TableHead>Alerta</TableHead>
-                <TableHead className="text-right">Ações</TableHead>
+                <TableHead 
+                  className="cursor-pointer select-none hover:bg-emerald-100/50 transition-colors py-3"
+                  onClick={() => handleSort('platform')}
+                >
+                  <div className="flex items-center gap-1.5 font-bold text-slate-700">
+                    Plataforma / Conta {getSortIcon('platform')}
+                  </div>
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer select-none hover:bg-emerald-100/50 transition-colors py-3"
+                  onClick={() => handleSort('reminder')}
+                >
+                  <div className="flex items-center gap-1.5 font-bold text-slate-700">
+                    Lembrete {getSortIcon('reminder')}
+                  </div>
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer select-none hover:bg-emerald-100/50 transition-colors py-3"
+                  onClick={() => handleSort('end_date')}
+                >
+                  <div className="flex items-center gap-1.5 font-bold text-slate-700">
+                    Datas {getSortIcon('end_date')}
+                  </div>
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer select-none hover:bg-emerald-100/50 transition-colors py-3"
+                  onClick={() => handleSort('bot_alert')}
+                >
+                  <div className="flex items-center gap-1.5 font-bold text-slate-700">
+                    Alerta {getSortIcon('bot_alert')}
+                  </div>
+                </TableHead>
+                <TableHead className="text-right font-bold text-slate-700">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -172,8 +267,14 @@ export default function RegistrationsPage() {
                     Nenhum cadastro realizado ainda.
                   </TableCell>
                 </TableRow>
+              ) : filteredRegs.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="h-32 text-center text-gray-500">
+                    Nenhum cadastro encontrado com o termo "{searchQuery}".
+                  </TableCell>
+                </TableRow>
               ) : (
-                registrations.map((reg) => (
+                sortedRegs.map((reg) => (
                   <TableRow key={reg.id} className="hover:bg-emerald-50/10 transition-colors">
                     <TableCell>
                       <div className="flex flex-col">

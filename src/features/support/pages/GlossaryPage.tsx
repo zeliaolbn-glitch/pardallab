@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useGlossary, type GlossaryItem } from '../hooks/useGlossary'
 import { Card, CardContent } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Book, Plus, Pencil, Trash2, ExternalLink, Search } from 'lucide-react'
+import { Book, Plus, Pencil, Trash2, ExternalLink, Search, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
@@ -22,6 +22,28 @@ export default function GlossaryPage() {
     usage: '',
     tutorial_link: ''
   })
+  const [sortConfig, setSortConfig] = useState<{
+    key: 'expression' | 'usage' | null
+    direction: 'asc' | 'desc'
+  }>({ key: null, direction: 'asc' })
+
+  const handleSort = (key: 'expression' | 'usage') => {
+    setSortConfig(prev => {
+      if (prev.key === key) {
+        return { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' }
+      }
+      return { key, direction: 'asc' }
+    })
+  }
+
+  const getSortIcon = (key: 'expression' | 'usage') => {
+    if (sortConfig.key !== key) {
+      return <ArrowUpDown className="h-3 w-3 text-slate-400" />
+    }
+    return sortConfig.direction === 'asc' 
+      ? <ArrowUp className="h-3 w-3 text-indigo-600 font-bold" />
+      : <ArrowDown className="h-3 w-3 text-indigo-600 font-bold" />
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -53,6 +75,16 @@ export default function GlossaryPage() {
     i.description?.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
+  const sortedItems = [...filteredItems].sort((a, b) => {
+    if (!sortConfig.key) return 0
+    const valA = (a[sortConfig.key] || '').toString().toLowerCase()
+    const valB = (b[sortConfig.key] || '').toString().toLowerCase()
+
+    if (valA < valB) return sortConfig.direction === 'asc' ? -1 : 1
+    if (valA > valB) return sortConfig.direction === 'asc' ? 1 : -1
+    return 0
+  })
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -62,14 +94,23 @@ export default function GlossaryPage() {
         </div>
         
         <div className="flex items-center gap-3">
-          <div className="relative w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+          <div className="relative w-64 flex items-center">
+            <Search className="absolute left-3 h-4 w-4 text-slate-400 pointer-events-none" />
             <Input 
               placeholder="Pesquisar termo..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+              className="bg-white border-slate-200 h-10 text-sm shadow-sm pl-9 pr-10 w-full"
             />
+            {searchTerm && (
+              <button 
+                type="button" 
+                onClick={() => setSearchTerm('')}
+                className="absolute right-3 text-slate-400 hover:text-slate-600 text-xs font-medium"
+              >
+                ✕
+              </button>
+            )}
           </div>
 
           <Dialog open={open} onOpenChange={setOpen}>
@@ -113,10 +154,24 @@ export default function GlossaryPage() {
           <Table>
             <TableHeader className="bg-indigo-50/50">
               <TableRow>
-                <TableHead className="w-[200px]">Expressão</TableHead>
-                <TableHead>Descrição</TableHead>
-                <TableHead>Uso</TableHead>
-                <TableHead className="text-right">Ações</TableHead>
+                <TableHead 
+                  className="w-[200px] cursor-pointer select-none hover:bg-indigo-100/50 transition-colors py-3"
+                  onClick={() => handleSort('expression')}
+                >
+                  <div className="flex items-center gap-1.5 font-bold text-slate-700">
+                    Expressão {getSortIcon('expression')}
+                  </div>
+                </TableHead>
+                <TableHead className="font-bold text-slate-700">Descrição</TableHead>
+                <TableHead 
+                  className="cursor-pointer select-none hover:bg-indigo-100/50 transition-colors py-3"
+                  onClick={() => handleSort('usage')}
+                >
+                  <div className="flex items-center gap-1.5 font-bold text-slate-700">
+                    Uso {getSortIcon('usage')}
+                  </div>
+                </TableHead>
+                <TableHead className="text-right font-bold text-slate-700">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -127,7 +182,7 @@ export default function GlossaryPage() {
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredItems.map((item) => (
+                sortedItems.map((item) => (
                   <TableRow key={item.id} className="hover:bg-indigo-50/10 transition-colors">
                     <TableCell className="font-bold text-indigo-900">{item.expression}</TableCell>
                     <TableCell className="text-sm text-slate-600 max-w-xs whitespace-pre-wrap">{item.description}</TableCell>

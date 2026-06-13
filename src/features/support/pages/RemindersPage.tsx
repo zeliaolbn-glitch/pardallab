@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useReminders, type Reminder } from '../hooks/useReminders'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
-import { ListTodo, Plus, Pencil, Trash2, Calendar, ArrowUpDown } from 'lucide-react'
+import { ListTodo, Plus, Pencil, Trash2, Calendar, ArrowUpDown, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
@@ -82,18 +82,19 @@ export default function RemindersPage() {
           </form>
           {reminders.length > 0 && (
             <div className="flex gap-2">
-              <div className="relative flex-1">
+              <div className="relative flex-1 flex items-center">
+                <Search className="absolute left-3 h-4 w-4 text-slate-400 pointer-events-none" />
                 <Input
-                  placeholder="🔍 Filtrar pendências por nome..."
+                  placeholder="Filtrar pendências por nome..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="bg-white border-slate-200 h-10 text-sm shadow-sm pl-8"
+                  className="bg-white border-slate-200 h-10 text-sm shadow-sm pl-9 pr-16 w-full"
                 />
                 {searchQuery && (
                   <button 
                     type="button" 
                     onClick={() => setSearchQuery('')}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs font-medium"
+                    className="absolute right-3 text-slate-400 hover:text-slate-600 text-xs font-medium"
                   >
                     Limpar
                   </button>
