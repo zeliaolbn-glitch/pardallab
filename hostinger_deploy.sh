@@ -14,6 +14,8 @@ PASS=${HOSTINGER_PASS:-"hDqE@_F!EmQMpC2"}
 APP_DIR="/home/${USER}/domains/lawngreen-kudu-132132.hostingersite.com/public_html"
 
 REMOTE_CMD="export PATH=/opt/alt/alt-nodejs22/root/bin:/bin:/usr/bin:/usr/local/bin:\$PATH; \
+export RAYON_NUM_THREADS=1; \
+export UV_THREADPOOL_SIZE=1; \
 set -e; \
 cd \"$APP_DIR\"; \
 git fetch origin; \
