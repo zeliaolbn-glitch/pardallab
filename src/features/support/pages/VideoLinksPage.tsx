@@ -62,6 +62,9 @@ export default function VideoLinksPage() {
   }
 
   const getSortValue = (item: any, key: string) => {
+    if (key === 'created_at') {
+      return item.created_at ? new Date(item.created_at).getTime() : 0
+    }
     if (key === 'main_function') {
       return (item.main_function || item.video_function || '').toString().toLowerCase()
     }
@@ -226,6 +229,12 @@ export default function VideoLinksPage() {
               <TableRow>
                 <TableHead 
                   className="cursor-pointer select-none hover:bg-blue-100/50 transition-colors py-3" 
+                  onClick={() => handleSort('created_at')}
+                >
+                  <div className="flex items-center gap-1.5 font-bold text-slate-700">Data de Inserção {getSortIcon('created_at')}</div>
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer select-none hover:bg-blue-100/50 transition-colors py-3" 
                   onClick={() => handleSort('isAuto')}
                 >
                   <div className="flex items-center gap-1.5 font-bold text-slate-700">Origem {getSortIcon('isAuto')}</div>
@@ -260,13 +269,16 @@ export default function VideoLinksPage() {
             <TableBody>
               {filteredLinks.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="h-32 text-center text-gray-500">
+                  <TableCell colSpan={7} className="h-32 text-center text-gray-500">
                     Nenhum link encontrado.
                   </TableCell>
                 </TableRow>
               ) : (
                 filteredLinks.map((link) => (
                   <TableRow key={link.id} className="hover:bg-blue-50/10 transition-colors">
+                    <TableCell className="text-xs text-slate-500 whitespace-nowrap">
+                      {link.created_at ? new Date(link.created_at).toLocaleDateString('pt-BR') : '-'}
+                    </TableCell>
                     <TableCell>
                       <Badge variant={link.isAuto ? 'secondary' : 'outline'} className={link.isAuto ? 'bg-blue-50 text-blue-700 border-blue-100' : ''}>
                         {link.isAuto ? `Projeto - ${link.title}` : 'Manual'}

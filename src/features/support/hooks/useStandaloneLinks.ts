@@ -43,7 +43,10 @@ export function useStandaloneLinks() {
       if (error) throw error
       return data as StandaloneLink
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['standalone_links'] })
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['standalone_links'] })
+      queryClient.invalidateQueries({ queryKey: ['draft_links'] })
+    }
   })
 
   const updateLink = useMutation({
@@ -55,7 +58,10 @@ export function useStandaloneLinks() {
       
       if (error) throw error
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['standalone_links'] })
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['standalone_links'] })
+      queryClient.invalidateQueries({ queryKey: ['draft_links'] })
+    }
   })
 
   const deleteLink = useMutation({
@@ -67,7 +73,10 @@ export function useStandaloneLinks() {
       
       if (error) throw error
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['standalone_links'] })
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['standalone_links'] })
+      queryClient.invalidateQueries({ queryKey: ['draft_links'] })
+    }
   })
 
   return {

@@ -112,7 +112,7 @@ export default function DraftLinksPage() {
                   onClick={() => handleSort('created_at')}
                 >
                   <div className="flex items-center gap-1.5 font-bold text-slate-700">
-                    Data Recebimento {getSortIcon('created_at')}
+                    Data de Inserção {getSortIcon('created_at')}
                   </div>
                 </TableHead>
                 <TableHead 

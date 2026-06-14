@@ -24,10 +24,10 @@ export function EditStandaloneLinkModal({ link }: EditStandaloneLinkModalProps) 
   const { updateLink } = useStandaloneLinks()
 
   const [formData, setFormData] = useState({
-    title: link.title,
-    url: link.url,
-    main_function: link.main_function,
-    tool: link.tool,
+    title: link.title || '',
+    url: link.url || '',
+    main_function: link.main_function === 'draft' ? '' : (link.main_function || ''),
+    tool: link.tool || '',
     summary: link.summary || ''
   })
 
