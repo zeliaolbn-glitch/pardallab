@@ -65,7 +65,7 @@ export function AppSidebar() {
           onError={(e) => (e.currentTarget.style.display = 'none')}
         />
         <span className="text-xl font-black text-slate-800 tracking-tighter">
-          PardalLab <span className="text-blue-600 text-xs">Versão_1.1.0</span>
+          PardalLab <span className="text-blue-600 text-xs">Versão_1.2.0</span>
         </span>
       </div>
       
