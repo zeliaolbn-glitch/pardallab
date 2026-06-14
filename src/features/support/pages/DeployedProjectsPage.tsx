@@ -2,7 +2,7 @@ import { useDeployedProjects } from '../hooks/useDeployedProjects'
 import { useProjects } from '@/features/projects/hooks/useProjects'
 import { Card, CardContent } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Globe, Plus, ExternalLink, Search, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
+import { Globe, Plus, ExternalLink, Search, ArrowUpDown, ArrowUp, ArrowDown, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useState } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog'
@@ -13,7 +13,7 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/h
 import { Badge } from '@/components/ui/badge'
 
 export default function DeployedProjectsPage() {
-  const { deployed: manualDeployed, createDeployed } = useDeployedProjects()
+  const { deployed: manualDeployed, createDeployed, deleteDeployed } = useDeployedProjects()
   const { projects } = useProjects()
   const [open, setOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -260,9 +260,16 @@ export default function DeployedProjectsPage() {
                     </TableCell>
                     <TableCell className="text-xs font-mono text-gray-500">{d.default_user || '-'}</TableCell>
                     <TableCell className="text-right">
-                      <Button variant="ghost" size="sm" onClick={() => window.open(d.web_url, '_blank')}>
-                        <ExternalLink className="h-4 w-4" />
-                      </Button>
+                      <div className="flex justify-end gap-2">
+                        <Button variant="ghost" size="sm" onClick={() => window.open(d.web_url, '_blank')}>
+                          <ExternalLink className="h-4 w-4" />
+                        </Button>
+                        {!d.isAuto && (
+                          <Button variant="ghost" size="sm" className="text-rose-500 hover:text-rose-600 hover:bg-rose-50" onClick={() => deleteDeployed(d.id)}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))
