@@ -15,51 +15,7 @@ import { EditStandaloneLinkModal } from '../components/EditStandaloneLinkModal'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
 import { Badge } from '@/components/ui/badge'
 
-// Componente para Header Redimensionável
-function ResizableHeader({ title, sortKey, width, onResize, handleSort, getSortIcon, isAction }: any) {
-  const handleMouseDown = (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    const startX = e.pageX
-    const startWidth = width
-
-    const handleMouseMove = (moveEvent: MouseEvent) => {
-      const newWidth = Math.max(60, startWidth + (moveEvent.pageX - startX))
-      onResize(sortKey, newWidth)
-    }
-
-    const handleMouseUp = () => {
-      document.removeEventListener('mousemove', handleMouseMove)
-      document.removeEventListener('mouseup', handleMouseUp)
-    }
-
-    document.addEventListener('mousemove', handleMouseMove)
-    document.addEventListener('mouseup', handleMouseUp)
-  }
-
-  return (
-    <TableHead 
-      className="relative p-0 hover:bg-blue-100/50 transition-colors align-middle border-r border-slate-200/50 last:border-r-0"
-      style={{ width, minWidth: width, maxWidth: width }}
-    >
-      <div 
-        className={cn(
-          "flex items-center gap-1.5 font-bold text-slate-700 p-3 h-full overflow-hidden",
-          !isAction && "cursor-pointer select-none"
-        )}
-        onClick={() => !isAction && handleSort(sortKey)}
-      >
-        <span className="truncate">{title}</span> {!isAction && getSortIcon(sortKey)}
-      </div>
-      <div 
-        className="absolute right-0 top-0 bottom-0 w-2 cursor-col-resize hover:bg-blue-400/50 active:bg-blue-500 transition-colors z-10"
-        onMouseDown={handleMouseDown}
-        onClick={e => e.stopPropagation()}
-      />
-    </TableHead>
-  )
-}
-
+// Componente removido: ResizableHeader não é mais utilizado.
 // Componente auxiliar para buscar título do YouTube dinamicamente
 const YoutubeTitle = ({ url, fallback }: { url: string, fallback: string }) => {
   const [title, setTitle] = useState(fallback)
@@ -89,20 +45,7 @@ export default function VideoLinksPage() {
   })
   const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' | null }>({ key: 'created_at', direction: 'desc' })
 
-  // Estado para larguras das colunas
-  const [colWidths, setColWidths] = useState<Record<string, number>>({
-    created_at: 130,
-    isAuto: 140,
-    title: 220,
-    main_function: 140,
-    tool: 120,
-    rating: 120,
-    actions: 120
-  })
-
-  const handleResize = (key: string, newWidth: number) => {
-    setColWidths(prev => ({ ...prev, [key]: newWidth }))
-  }
+  // Removido o estado colWidths e a função handleResize
 
   const handleSort = (key: string) => {
     let direction: 'asc' | 'desc' = 'asc'
@@ -282,18 +225,48 @@ export default function VideoLinksPage() {
         </CardContent>
       </Card>
 
-      <Card className="border-none shadow-md overflow-x-auto">
-        <CardContent className="p-0 min-w-max">
-          <Table className="table-fixed w-full">
+      <Card className="border-none shadow-md overflow-hidden">
+        <CardContent className="p-0">
+          <Table>
             <TableHeader className="bg-blue-50/50">
               <TableRow>
-                <ResizableHeader title="Data de Inserção" sortKey="created_at" width={colWidths.created_at} onResize={handleResize} handleSort={handleSort} getSortIcon={getSortIcon} />
-                <ResizableHeader title="Origem" sortKey="isAuto" width={colWidths.isAuto} onResize={handleResize} handleSort={handleSort} getSortIcon={getSortIcon} />
-                <ResizableHeader title="Título" sortKey="title" width={colWidths.title} onResize={handleResize} handleSort={handleSort} getSortIcon={getSortIcon} />
-                <ResizableHeader title="Função Principal" sortKey="main_function" width={colWidths.main_function} onResize={handleResize} handleSort={handleSort} getSortIcon={getSortIcon} />
-                <ResizableHeader title="Ferramenta" sortKey="tool" width={colWidths.tool} onResize={handleResize} handleSort={handleSort} getSortIcon={getSortIcon} />
-                <ResizableHeader title="Avaliação" sortKey="rating" width={colWidths.rating} onResize={handleResize} handleSort={handleSort} getSortIcon={getSortIcon} />
-                <ResizableHeader title="Ações" sortKey="actions" width={colWidths.actions} onResize={handleResize} handleSort={() => {}} getSortIcon={() => null} isAction />
+                <TableHead 
+                  className="cursor-pointer select-none hover:bg-blue-100/50 transition-colors py-3 w-[120px]" 
+                  onClick={() => handleSort('created_at')}
+                >
+                  <div className="flex items-center gap-1.5 font-bold text-slate-700">Data {getSortIcon('created_at')}</div>
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer select-none hover:bg-blue-100/50 transition-colors py-3 w-[100px]" 
+                  onClick={() => handleSort('isAuto')}
+                >
+                  <div className="flex items-center gap-1.5 font-bold text-slate-700">Origem {getSortIcon('isAuto')}</div>
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer select-none hover:bg-blue-100/50 transition-colors py-3" 
+                  onClick={() => handleSort('title')}
+                >
+                  <div className="flex items-center gap-1.5 font-bold text-slate-700">Título {getSortIcon('title')}</div>
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer select-none hover:bg-blue-100/50 transition-colors py-3 w-[150px]" 
+                  onClick={() => handleSort('main_function')}
+                >
+                  <div className="flex items-center gap-1.5 font-bold text-slate-700">Função {getSortIcon('main_function')}</div>
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer select-none hover:bg-blue-100/50 transition-colors py-3 w-[120px]" 
+                  onClick={() => handleSort('tool')}
+                >
+                  <div className="flex items-center gap-1.5 font-bold text-slate-700">Ferramenta {getSortIcon('tool')}</div>
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer select-none hover:bg-blue-100/50 transition-colors py-3 w-[120px]" 
+                  onClick={() => handleSort('rating')}
+                >
+                  <div className="flex items-center gap-1.5 font-bold text-slate-700">Avaliação {getSortIcon('rating')}</div>
+                </TableHead>
+                <TableHead className="text-right font-bold text-slate-700 w-[120px]">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
