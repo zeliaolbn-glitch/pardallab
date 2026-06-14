@@ -23,11 +23,11 @@ export default function GlossaryPage() {
     tutorial_link: ''
   })
   const [sortConfig, setSortConfig] = useState<{
-    key: 'expression' | 'usage' | null
+    key: 'expression' | 'usage' | 'description' | null
     direction: 'asc' | 'desc'
   }>({ key: null, direction: 'asc' })
 
-  const handleSort = (key: 'expression' | 'usage') => {
+  const handleSort = (key: 'expression' | 'usage' | 'description') => {
     setSortConfig(prev => {
       if (prev.key === key) {
         return { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' }
@@ -36,7 +36,7 @@ export default function GlossaryPage() {
     })
   }
 
-  const getSortIcon = (key: 'expression' | 'usage') => {
+  const getSortIcon = (key: 'expression' | 'usage' | 'description') => {
     if (sortConfig.key !== key) {
       return <ArrowUpDown className="h-3 w-3 text-slate-400" />
     }
@@ -162,7 +162,14 @@ export default function GlossaryPage() {
                     Expressão {getSortIcon('expression')}
                   </div>
                 </TableHead>
-                <TableHead className="font-bold text-slate-700">Descrição</TableHead>
+                <TableHead 
+                  className="cursor-pointer select-none hover:bg-indigo-100/50 transition-colors py-3"
+                  onClick={() => handleSort('description')}
+                >
+                  <div className="flex items-center gap-1.5 font-bold text-slate-700">
+                    Descrição {getSortIcon('description')}
+                  </div>
+                </TableHead>
                 <TableHead 
                   className="cursor-pointer select-none hover:bg-indigo-100/50 transition-colors py-3"
                   onClick={() => handleSort('usage')}

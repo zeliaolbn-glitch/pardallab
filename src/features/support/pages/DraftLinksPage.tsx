@@ -12,11 +12,11 @@ export default function DraftLinksPage() {
   const { drafts, deleteDraft, validateDraft } = useDraftLinks()
   const [searchQuery, setSearchQuery] = useState('')
   const [sortConfig, setSortConfig] = useState<{
-    key: 'created_at' | 'title' | null
+    key: 'created_at' | 'title' | 'status' | null
     direction: 'asc' | 'desc'
   }>({ key: null, direction: 'asc' })
 
-  const handleSort = (key: 'created_at' | 'title') => {
+  const handleSort = (key: 'created_at' | 'title' | 'status') => {
     setSortConfig(prev => {
       if (prev.key === key) {
         return { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' }
@@ -25,7 +25,7 @@ export default function DraftLinksPage() {
     })
   }
 
-  const getSortIcon = (key: 'created_at' | 'title') => {
+  const getSortIcon = (key: 'created_at' | 'title' | 'status') => {
     if (sortConfig.key !== key) {
       return <ArrowUpDown className="h-3 w-3 text-slate-400" />
     }
@@ -42,8 +42,15 @@ export default function DraftLinksPage() {
 
   const sortedDrafts = [...filteredDrafts].sort((a, b) => {
     if (!sortConfig.key) return 0
-    const valA = (a[sortConfig.key] || '').toString().toLowerCase()
-    const valB = (b[sortConfig.key] || '').toString().toLowerCase()
+    let valA = ''
+    let valB = ''
+    if (sortConfig.key === 'status') {
+      valA = 'pendente'
+      valB = 'pendente'
+    } else {
+      valA = (a[sortConfig.key] || '').toString().toLowerCase()
+      valB = (b[sortConfig.key] || '').toString().toLowerCase()
+    }
 
     if (valA < valB) return sortConfig.direction === 'asc' ? -1 : 1
     if (valA > valB) return sortConfig.direction === 'asc' ? 1 : -1
@@ -116,7 +123,14 @@ export default function DraftLinksPage() {
                     Link Enviado {getSortIcon('title')}
                   </div>
                 </TableHead>
-                <TableHead className="font-bold text-slate-700">Status</TableHead>
+                <TableHead 
+                  className="cursor-pointer select-none hover:bg-amber-100/50 transition-colors py-3"
+                  onClick={() => handleSort('status')}
+                >
+                  <div className="flex items-center gap-1.5 font-bold text-slate-700">
+                    Status {getSortIcon('status')}
+                  </div>
+                </TableHead>
                 <TableHead className="text-right font-bold text-slate-700">Ações</TableHead>
               </TableRow>
             </TableHeader>
