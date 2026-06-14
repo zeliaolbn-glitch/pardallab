@@ -15,6 +15,51 @@ import { EditStandaloneLinkModal } from '../components/EditStandaloneLinkModal'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
 import { Badge } from '@/components/ui/badge'
 
+// Componente para Header Redimensionável
+function ResizableHeader({ title, sortKey, width, onResize, handleSort, getSortIcon, isAction }: any) {
+  const handleMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    const startX = e.pageX
+    const startWidth = width
+
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      const newWidth = Math.max(60, startWidth + (moveEvent.pageX - startX))
+      onResize(sortKey, newWidth)
+    }
+
+    const handleMouseUp = () => {
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+    }
+
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseup', handleMouseUp)
+  }
+
+  return (
+    <TableHead 
+      className="relative p-0 hover:bg-blue-100/50 transition-colors align-middle border-r border-slate-200/50 last:border-r-0"
+      style={{ width, minWidth: width, maxWidth: width }}
+    >
+      <div 
+        className={cn(
+          "flex items-center gap-1.5 font-bold text-slate-700 p-3 h-full overflow-hidden",
+          !isAction && "cursor-pointer select-none"
+        )}
+        onClick={() => !isAction && handleSort(sortKey)}
+      >
+        <span className="truncate">{title}</span> {!isAction && getSortIcon(sortKey)}
+      </div>
+      <div 
+        className="absolute right-0 top-0 bottom-0 w-2 cursor-col-resize hover:bg-blue-400/50 active:bg-blue-500 transition-colors z-10"
+        onMouseDown={handleMouseDown}
+        onClick={e => e.stopPropagation()}
+      />
+    </TableHead>
+  )
+}
+
 // Componente auxiliar para buscar título do YouTube dinamicamente
 const YoutubeTitle = ({ url, fallback }: { url: string, fallback: string }) => {
   const [title, setTitle] = useState(fallback)
@@ -43,6 +88,21 @@ export default function VideoLinksPage() {
     summary: ''
   })
   const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' | null }>({ key: 'created_at', direction: 'desc' })
+
+  // Estado para larguras das colunas
+  const [colWidths, setColWidths] = useState<Record<string, number>>({
+    created_at: 130,
+    isAuto: 140,
+    title: 220,
+    main_function: 140,
+    tool: 120,
+    rating: 120,
+    actions: 120
+  })
+
+  const handleResize = (key: string, newWidth: number) => {
+    setColWidths(prev => ({ ...prev, [key]: newWidth }))
+  }
 
   const handleSort = (key: string) => {
     let direction: 'asc' | 'desc' = 'asc'
@@ -222,48 +282,18 @@ export default function VideoLinksPage() {
         </CardContent>
       </Card>
 
-      <Card className="border-none shadow-md overflow-hidden">
-        <CardContent className="p-0">
-          <Table>
+      <Card className="border-none shadow-md overflow-x-auto">
+        <CardContent className="p-0 min-w-max">
+          <Table className="table-fixed w-full">
             <TableHeader className="bg-blue-50/50">
               <TableRow>
-                <TableHead 
-                  className="cursor-pointer select-none hover:bg-blue-100/50 transition-colors py-3" 
-                  onClick={() => handleSort('created_at')}
-                >
-                  <div className="flex items-center gap-1.5 font-bold text-slate-700">Data de Inserção {getSortIcon('created_at')}</div>
-                </TableHead>
-                <TableHead 
-                  className="cursor-pointer select-none hover:bg-blue-100/50 transition-colors py-3" 
-                  onClick={() => handleSort('isAuto')}
-                >
-                  <div className="flex items-center gap-1.5 font-bold text-slate-700">Origem {getSortIcon('isAuto')}</div>
-                </TableHead>
-                <TableHead 
-                  className="cursor-pointer select-none hover:bg-blue-100/50 transition-colors py-3" 
-                  onClick={() => handleSort('title')}
-                >
-                  <div className="flex items-center gap-1.5 font-bold text-slate-700">Título {getSortIcon('title')}</div>
-                </TableHead>
-                <TableHead 
-                  className="cursor-pointer select-none hover:bg-blue-100/50 transition-colors py-3" 
-                  onClick={() => handleSort('main_function')}
-                >
-                  <div className="flex items-center gap-1.5 font-bold text-slate-700">Função Principal {getSortIcon('main_function')}</div>
-                </TableHead>
-                <TableHead 
-                  className="cursor-pointer select-none hover:bg-blue-100/50 transition-colors py-3" 
-                  onClick={() => handleSort('tool')}
-                >
-                  <div className="flex items-center gap-1.5 font-bold text-slate-700">Ferramenta {getSortIcon('tool')}</div>
-                </TableHead>
-                <TableHead 
-                  className="cursor-pointer select-none hover:bg-blue-100/50 transition-colors py-3" 
-                  onClick={() => handleSort('rating')}
-                >
-                  <div className="flex items-center gap-1.5 font-bold text-slate-700">Avaliação {getSortIcon('rating')}</div>
-                </TableHead>
-                <TableHead className="text-right font-bold text-slate-700">Ações</TableHead>
+                <ResizableHeader title="Data de Inserção" sortKey="created_at" width={colWidths.created_at} onResize={handleResize} handleSort={handleSort} getSortIcon={getSortIcon} />
+                <ResizableHeader title="Origem" sortKey="isAuto" width={colWidths.isAuto} onResize={handleResize} handleSort={handleSort} getSortIcon={getSortIcon} />
+                <ResizableHeader title="Título" sortKey="title" width={colWidths.title} onResize={handleResize} handleSort={handleSort} getSortIcon={getSortIcon} />
+                <ResizableHeader title="Função Principal" sortKey="main_function" width={colWidths.main_function} onResize={handleResize} handleSort={handleSort} getSortIcon={getSortIcon} />
+                <ResizableHeader title="Ferramenta" sortKey="tool" width={colWidths.tool} onResize={handleResize} handleSort={handleSort} getSortIcon={getSortIcon} />
+                <ResizableHeader title="Avaliação" sortKey="rating" width={colWidths.rating} onResize={handleResize} handleSort={handleSort} getSortIcon={getSortIcon} />
+                <ResizableHeader title="Ações" sortKey="actions" width={colWidths.actions} onResize={handleResize} handleSort={() => {}} getSortIcon={() => null} isAction />
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -276,18 +306,21 @@ export default function VideoLinksPage() {
               ) : (
                 filteredLinks.map((link) => (
                   <TableRow key={link.id} className="hover:bg-blue-50/10 transition-colors">
-                    <TableCell className="text-xs text-slate-500 whitespace-nowrap">
+                    <TableCell className="text-xs text-slate-500 whitespace-normal break-words align-top overflow-hidden">
                       {link.created_at ? new Date(link.created_at).toLocaleDateString('pt-BR') : '-'}
                     </TableCell>
-                    <TableCell>
-                      <Badge variant={link.isAuto ? 'secondary' : 'outline'} className={link.isAuto ? 'bg-blue-50 text-blue-700 border-blue-100' : ''}>
+                    <TableCell className="align-top overflow-hidden">
+                      <Badge variant={link.isAuto ? 'secondary' : 'outline'} className={cn(
+                        "whitespace-normal break-words text-left leading-tight py-1 h-auto w-full",
+                        link.isAuto ? 'bg-blue-50 text-blue-700 border-blue-100' : ''
+                      )}>
                         {link.isAuto ? `Projeto - ${link.title}` : 'Manual'}
                       </Badge>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="align-top overflow-hidden">
                       <HoverCard openDelay={200}>
                         <HoverCardTrigger asChild>
-                          <div className="cursor-pointer hover:text-blue-600 transition-colors">
+                          <div className="cursor-pointer hover:text-blue-600 transition-colors whitespace-normal break-words line-clamp-4">
                             {link.isAuto ? (
                               <YoutubeTitle url={link.video_link} fallback={link.title} />
                             ) : (
@@ -322,13 +355,15 @@ export default function VideoLinksPage() {
                         </HoverCardContent>
                       </HoverCard>
                     </TableCell>
-                    <TableCell className="text-slate-600">{link.main_function || link.video_function}</TableCell>
-                    <TableCell>
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-800">
+                    <TableCell className="text-slate-600 align-top whitespace-normal break-words overflow-hidden">
+                      <span className="line-clamp-3">{link.main_function || link.video_function}</span>
+                    </TableCell>
+                    <TableCell className="align-top overflow-hidden">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-800 whitespace-normal break-words line-clamp-2">
                         {link.tool || link.video_tool || '-'}
                       </span>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="align-top">
                       <div className="flex items-center gap-0.5">
                         {[1, 2, 3, 4, 5].map((star) => (
                           <button
@@ -362,7 +397,7 @@ export default function VideoLinksPage() {
                         ))}
                       </div>
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right align-top">
                       <div className="flex justify-end gap-2">
                         {link.isAuto ? (
                           <>
