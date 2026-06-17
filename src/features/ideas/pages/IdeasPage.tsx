@@ -2,11 +2,12 @@ import { useState } from 'react'
 import { useIdeas } from '../hooks/useIdeas'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Lightbulb, Trash2, Search } from 'lucide-react'
+import { Lightbulb, Trash2, Search, Download } from 'lucide-react'
 import { CreateIdeaModal } from '../components/CreateIdeaModal'
 import { ConvertIdeaModal } from '../components/ConvertIdeaModal'
 import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
+import { exportToCsv } from '@/lib/export'
 
 export default function IdeasPage() {
   const { ideas, isLoading, deleteIdea } = useIdeas()
@@ -61,6 +62,9 @@ export default function IdeasPage() {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
+          <Button variant="outline" className="gap-2" onClick={() => exportToCsv(safeIdeas, 'ideiaflow_ideias')}>
+            <Download className="h-4 w-4" /> Exportar CSV
+          </Button>
           <CreateIdeaModal />
         </div>
       </div>

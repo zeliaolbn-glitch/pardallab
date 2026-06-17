@@ -2,13 +2,14 @@ import { useProjects } from '../hooks/useProjects'
 import { PROJECT_STATUS_FLOW, type ProjectStatus, type Project } from '../types'
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Trash2, MessageSquare, Calendar, Video, Smartphone, ListChecks } from 'lucide-react'
+import { Trash2, MessageSquare, Calendar, Video, Smartphone, ListChecks, Download } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { AIAssistantModal } from '../components/AIAssistantModal'
 import { EditProjectModal } from '../components/EditProjectModal'
 import { getWhatsAppUrl } from '@/lib/social-links'
 import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd'
 import { toast } from 'sonner'
+import { exportToCsv } from '@/lib/export'
 
 export default function ProjectsPage() {
   const { projects, isLoading, updateProjectStatus, deleteProject } = useProjects()
@@ -58,6 +59,9 @@ export default function ProjectsPage() {
     <div className="h-[calc(100vh-120px)] flex flex-col space-y-6">
       <div className="flex items-center justify-between px-2">
         <h1 className="text-3xl font-bold tracking-tight text-slate-900">Evolução de Projetos</h1>
+        <Button variant="outline" className="gap-2" onClick={() => exportToCsv(projects, 'ideiaflow_projetos')}>
+          <Download className="h-4 w-4" /> Exportar CSV
+        </Button>
       </div>
 
       <DragDropContext onDragEnd={onDragEnd}>
