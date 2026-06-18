@@ -10,19 +10,28 @@ export interface StandaloneLink {
   summary: string
   rating?: number
   created_at: string
+  category?: string
 }
 
-export function useStandaloneLinks() {
+export function useStandaloneLinks(category: 'geral' | 'investimento' = 'geral') {
   const queryClient = useQueryClient()
 
   const linksQuery = useQuery({
-    queryKey: ['standalone_links'],
+    queryKey: ['standalone_links', category],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('standalone_links')
         .select('*')
         .neq('main_function', 'draft')
         .order('created_at', { ascending: false })
+      
+      if (category === 'investimento') {
+        query = query.eq('category', 'investimento')
+      } else {
+        query = query.or('category.is.null,category.neq.investimento')
+      }
+
+      const { data, error } = await query
       
       if (error) throw error
       return data as StandaloneLink[]
@@ -35,6 +44,7 @@ export function useStandaloneLinks() {
         .from('standalone_links')
         .insert([{
           ...newLink,
+          category,
           created_at: new Date().toISOString()
         }])
         .select()

@@ -38,9 +38,12 @@ export function useDraftLinks() {
   })
 
   const validateDraft = useMutation({
-    mutationFn: async (id: string) => {
-      // Remove a flag de rascunho
-      const { error } = await supabase.from('standalone_links').update({ main_function: '' }).eq('id', id)
+    mutationFn: async ({ id, category = 'geral' }: { id: string, category?: 'geral' | 'investimento' }) => {
+      // Remove a flag de rascunho e define a categoria
+      const { error } = await supabase.from('standalone_links').update({ 
+        main_function: '',
+        category 
+      }).eq('id', id)
       if (error) throw error
     },
     onSuccess: () => {

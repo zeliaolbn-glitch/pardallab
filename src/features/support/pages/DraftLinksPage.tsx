@@ -2,11 +2,12 @@ import { useState } from 'react'
 import { useDraftLinks } from '../hooks/useDraftLinks'
 import { Card, CardContent } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Check, Trash2, Clock, Search, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
+import { Check, Trash2, Clock, Search, ArrowUpDown, ArrowUp, ArrowDown, TrendingUp, Link2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
 import { EditStandaloneLinkModal } from '../components/EditStandaloneLinkModal'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 
 export default function DraftLinksPage() {
   const { drafts, deleteDraft, validateDraft } = useDraftLinks()
@@ -57,10 +58,10 @@ export default function DraftLinksPage() {
     return 0
   })
 
-  const handleValidate = async (id: string) => {
+  const handleValidate = async (id: string, category: 'geral' | 'investimento') => {
     try {
-      await validateDraft(id)
-      toast.success('Link movido para Biblioteca de Vídeos!')
+      await validateDraft({ id, category })
+      toast.success(category === 'investimento' ? 'Link movido para Investimentos!' : 'Link movido para Principal!')
     } catch (e) {
       toast.error('Erro ao validar link.')
     }
@@ -176,9 +177,23 @@ export default function DraftLinksPage() {
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
                         <EditStandaloneLinkModal link={draft as any} />
-                        <Button size="icon" variant="ghost" className="h-8 w-8 text-emerald-600" onClick={() => handleValidate(draft.id)} title="Aprovar e Enviar para Biblioteca">
-                          <Check className="h-4 w-4" />
-                        </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button size="icon" variant="ghost" className="h-8 w-8 text-emerald-600" title="Aprovar e Enviar">
+                              <Check className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-48">
+                            <DropdownMenuItem onClick={() => handleValidate(draft.id, 'geral')} className="gap-2 cursor-pointer">
+                              <Link2 className="h-4 w-4 text-blue-600" />
+                              Enviar para Principal
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleValidate(draft.id, 'investimento')} className="gap-2 cursor-pointer">
+                              <TrendingUp className="h-4 w-4 text-emerald-600" />
+                              Enviar p/ Investimentos
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                         <Button size="icon" variant="ghost" className="h-8 w-8 text-rose-500" onClick={() => deleteDraft(draft.id)} title="Excluir Rascunho">
                           <Trash2 className="h-4 w-4" />
                         </Button>

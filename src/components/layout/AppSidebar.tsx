@@ -33,6 +33,7 @@ const menuItems = [
     path: '/links',
     subItems: [
       { label: 'Principal', path: '/links' },
+      { label: 'Investimentos', path: '/links/investments' },
       { label: 'Rascunhos (Bot)', path: '/links/drafts' },
     ]
   },

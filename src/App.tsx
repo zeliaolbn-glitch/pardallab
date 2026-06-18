@@ -8,6 +8,7 @@ import IdeasPage from './features/ideas/pages/IdeasPage'
 import ProjectsPage from './features/projects/pages/ProjectsPage'
 import ToolsPage from './features/support/pages/ToolsPage'
 import VideoLinksPage from './features/support/pages/VideoLinksPage'
+import InvestmentsLinksPage from './features/support/pages/InvestmentsLinksPage'
 import DraftLinksPage from './features/support/pages/DraftLinksPage'
 import PromptsPage from './features/support/pages/PromptsPage'
 import TutorialsPage from './features/support/pages/TutorialsPage'
@@ -49,6 +50,7 @@ export default function App() {
             <Route path="projects" element={<ProjectsPage />} />
             <Route path="tools" element={<ToolsPage />} />
             <Route path="links" element={<VideoLinksPage />} />
+            <Route path="links/investments" element={<InvestmentsLinksPage />} />
             <Route path="links/drafts" element={<DraftLinksPage />} />
             <Route path="prompts" element={<PromptsPage />} />
             <Route path="tutorials" element={<TutorialsPage />} />
